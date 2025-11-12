@@ -18,13 +18,13 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...rest
 }) => {
-  const baseStyles = 'font-medium rounded-lg transition ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-75';
+  const baseStyles = 'font-medium rounded-lg transition-all ease-in-out duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-75 relative group';
   
   const variantStyles = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 disabled:bg-indigo-300',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 disabled:bg-gray-100 disabled:text-gray-400',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-300',
-    ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-300 disabled:text-gray-400',
+    primary: 'bg-indigo-700 text-white hover:bg-indigo-600 focus:ring-indigo-400 disabled:bg-indigo-900 disabled:text-gray-500 hover:shadow-lg hover:shadow-indigo-500/30',
+    secondary: 'bg-gray-700 text-gray-200 hover:bg-gray-600 focus:ring-gray-500 disabled:bg-gray-800 disabled:text-gray-500 hover:shadow-lg hover:shadow-gray-700/30',
+    danger: 'bg-red-700 text-white hover:bg-red-600 focus:ring-red-400 disabled:bg-red-900 disabled:text-gray-500 hover:shadow-lg hover:shadow-red-500/30',
+    ghost: 'text-indigo-400 hover:bg-gray-800 focus:ring-gray-600 disabled:text-gray-600 hover:shadow-md hover:shadow-indigo-400/20',
   };
 
   const sizeStyles = {

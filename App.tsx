@@ -7,6 +7,8 @@ import WelcomeScreen from './WelcomeScreen';
 import MainGameScreen from './MainGameScreen';
 import HallOfFame from './HallOfFame';
 import { Loader2 } from 'lucide-react';
+import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
+import { getRarityPokedexScoreValue } from './utils/gameHelpers'; // Import rarity score helper
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 
@@ -20,7 +22,7 @@ const App: React.FC = () => {
   const calculatePokedexScore = useCallback((pokemons: Parameters<typeof indexedDbService.archiveCurrentGame>[2]) => {
     return pokemons.reduce((score, pokemon) => {
       if (pokemon.status === PokemonStatus.OWNED) {
-        return score + 5; // 5 points for each owned Pokémon
+        return score + getRarityPokedexScoreValue(pokemon.rarity); // Use rarity-based score
       }
       if (pokemon.status === PokemonStatus.RESOLD) {
         return score + 1; // 1 point for each resold Pokémon
@@ -70,7 +72,7 @@ const App: React.FC = () => {
         await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, pokemonsToArchive);
       }
       await indexedDbService.clearCurrentGameData(); // Clears pokemons, resets tokens, sets hasActiveGame to true
-      await indexedDbService.saveAppState({ id: 'currentAppState', hasActiveGame: true, lastPlayedDate: new Date().toISOString() }); // Ensure active game state is true for a new game
+      // The hasActiveGame is set to true by clearCurrentGameData, no need to explicitly save again
       setCanContinueGame(false); // No pokemon yet, so can't continue
       setHasUnarchivedProgress(false); // Progress cleared
       setCurrentScreen('mainGame');
@@ -96,48 +98,81 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleEndGameAndArchive = useCallback(async () => {
+    setIsLoadingApp(true);
+    try {
+      const pokemonsToArchive = await indexedDbService.getPokemons();
+      if (pokemonsToArchive.length > 0) {
+        const tokenBalanceObj = await indexedDbService.getTokenBalance();
+        const score = calculatePokedexScore(pokemonsToArchive);
+
+        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, pokemonsToArchive);
+      }
+      
+      // Clear current game data and deactivate active game state
+      await indexedDbService.resetGameAfterArchive();
+
+      setCanContinueGame(false); // Game is ended, no active game to continue
+      setHasUnarchivedProgress(false); // Progress cleared
+      setCurrentScreen('welcome');
+    } catch (error) {
+      console.error('Failed to end game and archive:', error);
+      // Potentially show an error message
+    } finally {
+      setIsLoadingApp(false);
+    }
+  }, [calculatePokedexScore]);
+
   const handleViewHallOfFame = useCallback(() => {
     setCurrentScreen('hallOfFame');
   }, []);
 
-  const handleExitGame = useCallback(async () => {
-    // When exiting the main game, update app state to no longer have an active game
-    await indexedDbService.saveAppState({ id: 'currentAppState', hasActiveGame: false, lastPlayedDate: new Date().toISOString() });
-    setCanContinueGame(true); // User has data, so they can 'continue' next time, even if not 'active'
+  // For Hall of Fame, we want to go back to Welcome screen, but not necessarily 'exit' an active game context
+  const handleBackToWelcomeFromHallOfFame = useCallback(async () => {
+    // Re-evaluate if there's an active game context from DB
+    const appState = await indexedDbService.getAppState();
+    const pokemons = await indexedDbService.getPokemons();
+    const newCanContinueGame = appState.hasActiveGame && pokemons.length > 0;
+    setCanContinueGame(newCanContinueGame);
+    setHasUnarchivedProgress(pokemons.length > 0);
     setCurrentScreen('welcome');
   }, []);
 
+
   if (isLoadingApp) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <Loader2 className="animate-spin h-12 w-12 text-indigo-600" aria-label="Loading Pokémon Lab" />
-        <p className="ml-4 text-xl text-gray-700">Loading Pokémon Lab...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 to-indigo-950 text-gray-100">
+        <Loader2 className="animate-spin h-12 w-12 text-indigo-400 mb-4" aria-label="Loading Pokémon Lab" />
+        <p className="ml-4 text-xl text-gray-300 drop-shadow-lg">Loading Pokémon Lab...</p>
       </div>
     );
   }
 
   return (
     <>
-      {currentScreen === 'welcome' && (
-        <WelcomeScreen
-          canContinueGame={canContinueGame}
-          hasUnarchivedProgress={hasUnarchivedProgress}
-          onStartNewGame={handleStartNewGame}
-          onContinueGame={handleContinueGame}
-          onViewHallOfFame={handleViewHallOfFame}
-        />
-      )}
-      {currentScreen === 'mainGame' && (
-        <MainGameScreen
-          onViewHallOfFame={handleViewHallOfFame}
-          onExitGame={handleExitGame} // Allow exiting to welcome screen
-        />
-      )}
-      {currentScreen === 'hallOfFame' && (
-        <HallOfFame
-          onBack={handleExitGame} // Go back to welcome screen when leaving hall of fame
-        />
-      )}
+      <ParticleCanvas /> {/* Render ParticleCanvas as a background */}
+      <div className="relative z-10"> {/* Ensure content is above particles */}
+        {currentScreen === 'welcome' && (
+          <WelcomeScreen
+            canContinueGame={canContinueGame}
+            hasUnarchivedProgress={hasUnarchivedProgress}
+            onStartNewGame={handleStartNewGame}
+            onContinueGame={handleContinueGame}
+            onViewHallOfFame={handleViewHallOfFame}
+          />
+        )}
+        {currentScreen === 'mainGame' && (
+          <MainGameScreen
+            onViewHallOfFame={handleViewHallOfFame}
+            onEndGameAndArchive={handleEndGameAndArchive} // New prop for ending and archiving
+          />
+        )}
+        {currentScreen === 'hallOfFame' && (
+          <HallOfFame
+            onBack={handleBackToWelcomeFromHallOfFame} // Go back to welcome screen when leaving hall of fame
+          />
+        )}
+      </div>
     </>
   );
 };

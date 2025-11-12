@@ -29,8 +29,12 @@ This document tracks all development tasks for the Pokémon Generator applicatio
 - [x] Add an hall of fame to show the best older pokedex the user have created (history is kept on new game).
 - [x] Implement a "Continue Game" option on the welcome screen if an active game is detected.
 - [x] Welcome page do not explains how the scoring system is calculated
+- [x] Rehault the full app to be a modern sleek dark neon stylish app with dynamic animations and particle effects.
+- [x] A game is not stored in the history, there should be a button to end the game and store it in the history (to be listed in the hall of fame)
+- [x] The score should reward keeping higher rarity pokemon in the deck
+- [x] Hall of fame lists all pokemons in the deck while pokemon being resold should be listed as "sold" and kept as "owned"
+- [x] Welcome page is ugly, make it stunning and beautiful and easy to read and responsive
 
 ## In Progress
 
 ## Planned
-- [ ] Rehault the full app to be a modern sleek dark neon stylish app with dynamic animations and particle effects.

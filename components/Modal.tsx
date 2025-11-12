@@ -54,7 +54,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-70"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80"
       onClick={(e) => {
         // Close modal if clicked outside modal content
         if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -67,23 +67,23 @@ const Modal: React.FC<ModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 flex flex-col max-h-[90vh] overflow-hidden"
+        className="relative bg-gray-900 rounded-xl shadow-2xl max-w-lg w-full p-6 sm:p-8 flex flex-col max-h-[90vh] overflow-hidden border border-indigo-700/50"
       >
-        <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-          <h3 id="modal-title" className="text-xl sm:text-2xl font-semibold text-gray-900">
+        <div className="flex justify-between items-center pb-4 border-b border-gray-700">
+          <h3 id="modal-title" className="text-xl sm:text-2xl font-semibold text-indigo-400 drop-shadow-sm">
             {title}
           </h3>
           <Button variant="ghost" onClick={onClose} aria-label="Close modal" className="p-1 -mr-2">
-            <X className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+            <X className="h-6 w-6 text-gray-400 hover:text-indigo-400" />
           </Button>
         </div>
 
-        <div className="py-6 overflow-y-auto flex-grow custom-scrollbar">
+        <div className="py-6 overflow-y-auto flex-grow custom-scrollbar text-gray-200">
           {children}
         </div>
 
         {onConfirm && (
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-700">
             <Button variant="secondary" onClick={onClose} disabled={isLoading}>
               {cancelButtonText}
             </Button>

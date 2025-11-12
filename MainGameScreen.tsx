@@ -6,41 +6,17 @@ import { pokemonApiService } from './services/pokemonApiService';
 import { Pokemon, TokenBalance, AppMessage, PokemonStatus, PokemonRarity } from './types';
 import Button from './components/Button';
 import Modal from './components/Modal';
-import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, Menu } from 'lucide-react';
+import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut } from 'lucide-react';
+import { getRarityResellValue, getRarityPokedexScoreValue, rarityOrderMap } from './utils/gameHelpers'; // Import from utils
 
 const GENERATION_COST = 10;
 
-const getRarityResellValue = (rarity: PokemonRarity): number => {
-  switch (rarity) {
-    case PokemonRarity.S_PLUS: return 25;
-    case PokemonRarity.S: return 15;
-    case PokemonRarity.A: return 10;
-    case PokemonRarity.B: return 5;
-    case PokemonRarity.C: return 4;
-    case PokemonRarity.D: return 3;
-    case PokemonRarity.E: return 2;
-    case PokemonRarity.F: return 1;
-    default: return 1;
-  }
-};
-
-const rarityOrderMap: Record<PokemonRarity, number> = {
-  [PokemonRarity.S_PLUS]: 7,
-  [PokemonRarity.S]: 6,
-  [PokemonRarity.A]: 5,
-  [PokemonRarity.B]: 4,
-  [PokemonRarity.C]: 3,
-  [PokemonRarity.D]: 2,
-  [PokemonRarity.E]: 1,
-  [PokemonRarity.F]: 0,
-};
-
 interface MainGameScreenProps {
   onViewHallOfFame: () => void;
-  onExitGame: () => void; // Callback to go back to the welcome screen / new game options
+  onEndGameAndArchive: () => void; // New callback for ending and archiving the game
 }
 
-const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExitGame }) => {
+const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEndGameAndArchive }) => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -48,13 +24,18 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
   const [message, setMessage] = useState<AppMessage | null>(null);
   const [sortOrder, setSortOrder] = useState('date-desc');
 
-  // Modal states
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalTitle, setModalTitle] = useState<string>('');
-  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
-  const [modalOnConfirm, setModalOnConfirm] = useState<(() => void) | undefined>(undefined);
-  const [isModalConfirmLoading, setIsModalConfirmLoading] = useState<boolean>(false);
+  // Modals for general confirmations and resell
+  const [isGenericModalOpen, setIsGenericModalOpen] = useState<boolean>(false);
+  const [genericModalTitle, setGenericModalTitle] = useState<string>('');
+  const [genericModalContent, setGenericModalContent] = useState<React.ReactNode>(null);
+  const [genericModalOnConfirm, setGenericModalOnConfirm] = useState<(() => void) | undefined>(undefined);
+  const [isGenericModalConfirmLoading, setIsGenericModalConfirmLoading] = useState<boolean>(false);
+  const [genericModalConfirmButtonText, setGenericModalConfirmButtonText] = useState<string>('Confirm');
+  const [genericModalConfirmButtonVariant, setGenericModalConfirmButtonVariant] = useState<'primary' | 'danger'>('primary');
+
+  // Resell specific state (could be merged into generic modal, but kept separate for clarity during refactor)
   const [pokemonToResellId, setPokemonToResellId] = useState<string | null>(null);
+
 
   const showMessage = useCallback((type: 'success' | 'error' | 'warning', text: string) => {
     setMessage({ type, text });
@@ -117,13 +98,15 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
     }
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setPokemonToResellId(null);
-    setModalTitle('');
-    setModalContent(null);
-    setModalOnConfirm(undefined);
-    setIsModalConfirmLoading(false);
+  const closeGenericModal = () => {
+    setIsGenericModalOpen(false);
+    setPokemonToResellId(null); // Clear resell specific state as well
+    setGenericModalTitle('');
+    setGenericModalContent(null);
+    setGenericModalOnConfirm(undefined);
+    setIsGenericModalConfirmLoading(false);
+    setGenericModalConfirmButtonText('Confirm');
+    setGenericModalConfirmButtonVariant('primary');
   };
 
   const handleResellConfirmation = (pokemonId: string, pokemonName: string) => {
@@ -136,16 +119,16 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
     const resellValue = getRarityResellValue(pokemonToConfirm.rarity);
 
     setPokemonToResellId(pokemonId);
-    setModalTitle('Resell Pokémon');
-    setModalContent(
-      <p className="text-gray-700">
-        Are you sure you want to resell <span className="font-semibold text-indigo-700">{pokemonName}</span>?
-        You will receive <span className="font-bold text-green-600">{resellValue} tokens</span> back. This action cannot be undone.
+    setGenericModalTitle('Resell Pokémon');
+    setGenericModalContent(
+      <p className="text-gray-200">
+        Are you sure you want to resell <span className="font-semibold text-cyan-400">{pokemonName}</span>?
+        You will receive <span className="font-bold text-lime-300">{resellValue} tokens</span> back. This action cannot be undone.
       </p>
     );
     const onConfirmAction = () => {
       (async () => {
-        setIsModalConfirmLoading(true);
+        setIsGenericModalConfirmLoading(true);
         try {
           const pokemonToResell = pokemons.find(p => p.id === pokemonId);
           if (pokemonToResell) {
@@ -167,33 +150,62 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
           console.error("Error reselling Pokémon:", error);
           showMessage('error', `Failed to resell Pokémon: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
-          setIsModalConfirmLoading(false);
-          closeModal();
+          setIsGenericModalConfirmLoading(false);
+          closeGenericModal();
         }
       })();
     };
-    setModalOnConfirm(() => onConfirmAction);
-    setIsModalOpen(true);
+    setGenericModalOnConfirm(() => onConfirmAction);
+    setGenericModalConfirmButtonText('Resell');
+    setGenericModalConfirmButtonVariant('primary');
+    setIsGenericModalOpen(true);
+  };
+
+  const handleEndGameConfirmation = () => {
+    setGenericModalTitle('End Game & Archive Pokédex');
+    setGenericModalContent(
+      <p className="text-gray-200">
+        Are you sure you want to end your current game session?
+        <br/><br/>
+        Your collected Pokémon, current Pokédex Score, and token balance will be <span className="font-bold text-lime-300">saved to the Hall of Fame</span>.
+        Your current game progress will then be <span className="font-bold text-red-400">reset</span>.
+      </p>
+    );
+    setGenericModalOnConfirm(() => async () => {
+      setIsGenericModalConfirmLoading(true);
+      try {
+        await onEndGameAndArchive();
+      } catch (error) {
+        console.error("Error ending game:", error);
+        showMessage('error', `Failed to end game: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        setIsGenericModalConfirmLoading(false);
+        closeGenericModal();
+      }
+    });
+    setGenericModalConfirmButtonText('Archive & Exit');
+    setGenericModalConfirmButtonVariant('primary');
+    setIsGenericModalOpen(true);
   };
 
   const getRarityColor = useCallback((rarity: PokemonRarity) => {
     switch (rarity) {
-      case PokemonRarity.F: return 'bg-gray-200 text-gray-800';
-      case PokemonRarity.E: return 'bg-gray-300 text-gray-900';
-      case PokemonRarity.D: return 'bg-blue-100 text-blue-800';
-      case PokemonRarity.C: return 'bg-green-100 text-green-800';
-      case PokemonRarity.B: return 'bg-purple-100 text-purple-800';
-      case PokemonRarity.A: return 'bg-yellow-100 text-yellow-800';
-      case PokemonRarity.S: return 'bg-orange-100 text-orange-800';
-      case PokemonRarity.S_PLUS: return 'bg-red-100 text-red-800 font-bold';
-      default: return 'bg-gray-100 text-gray-700';
+      case PokemonRarity.F: return 'bg-gray-800 text-gray-400';
+      case PokemonRarity.E: return 'bg-gray-700 text-gray-300';
+      case PokemonRarity.D: return 'bg-blue-900 text-blue-300';
+      case PokemonRarity.C: return 'bg-green-900 text-green-300';
+      case PokemonRarity.B: return 'bg-purple-900 text-purple-300';
+      case PokemonRarity.A: return 'bg-yellow-900 text-yellow-300';
+      case PokemonRarity.S: return 'bg-orange-900 text-orange-300';
+      case PokemonRarity.S_PLUS: return 'bg-red-900 text-red-300 font-bold';
+      default: return 'bg-gray-900 text-gray-400';
     }
   }, []);
   
   const pokedexScore = useMemo(() => {
     return pokemons.reduce((score, pokemon) => {
       if (pokemon.status === PokemonStatus.OWNED) {
-        return score + 5; // 5 points for each owned Pokémon
+        return score + getRarityPokedexScoreValue(pokemon.rarity); // Use rarity-based score
       }
       if (pokemon.status === PokemonStatus.RESOLD) {
         return score + 1; // 1 point for each resold Pokémon
@@ -222,27 +234,28 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
   }, [pokemons, sortOrder]);
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-indigo-800 drop-shadow-md">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
           Pokémon Lab
         </h1>
-        <Button variant="secondary" onClick={onExitGame} aria-label="Menu">
-          <Menu className="h-6 w-6" />
+        <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
+          <LogOut className="h-6 w-6 text-indigo-400" />
+          <span className="ml-2 hidden sm:inline">End Game</span>
         </Button>
       </div>
 
       {message && (
         <div
-          className={`p-4 mb-6 rounded-lg shadow-md flex items-center justify-between transition-opacity duration-300 ${
-            message.type === 'success' ? 'bg-green-100 text-green-800' :
-            message.type === 'error' ? 'bg-red-100 text-red-800' :
-            'bg-yellow-100 text-yellow-800'
+          className={`p-4 mb-6 rounded-lg shadow-md flex items-center justify-between transition-opacity duration-300 border ${
+            message.type === 'success' ? 'bg-green-900 text-green-300 border-green-700' :
+            message.type === 'error' ? 'bg-red-900 text-red-300 border-red-700' :
+            'bg-yellow-900 text-yellow-300 border-yellow-700'
           }`}
           role="alert"
         >
           <p className="font-medium">{message.text}</p>
-          <Button variant="ghost" size="sm" onClick={() => setMessage(null)}>
+          <Button variant="ghost" size="sm" onClick={() => setMessage(null)} className="text-gray-400 hover:text-white">
             <XCircle className="h-5 w-5" />
           </Button>
         </div>
@@ -251,36 +264,36 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
       {/* Stats Section: Token Balance & Pokédex Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* Token Balance */}
-        <div className="bg-yellow-50 p-4 sm:p-6 rounded-xl shadow-md flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-yellow-800 flex items-center gap-3">
-            <Gem className="h-7 w-7 text-yellow-600" />
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
+            <Gem className="h-7 w-7 text-lime-300 drop-shadow-md" />
             Your Tokens:
           </h2>
-          <span className="text-3xl sm:text-4xl font-extrabold text-yellow-900 leading-none">
+          <span className="text-3xl sm:text-4xl font-extrabold text-lime-300 leading-none drop-shadow-md">
             {tokenBalance}
           </span>
         </div>
         
         {/* Pokédex Score */}
-        <div className="bg-indigo-50 p-4 sm:p-6 rounded-xl shadow-md flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-indigo-800 flex items-center gap-3">
-            <Trophy className="h-7 w-7 text-indigo-600" />
+        <div className="bg-indigo-900 p-4 sm:p-6 rounded-xl shadow-lg border border-indigo-700 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
+            <Trophy className="h-7 w-7 text-fuchsia-400 drop-shadow-md" />
             Pokédex Score:
           </h2>
-          <span className="text-3xl sm:text-4xl font-extrabold text-indigo-900 leading-none">
+          <span className="text-3xl sm:text-4xl font-extrabold text-fuchsia-400 leading-none drop-shadow-md">
             {pokedexScore}
           </span>
         </div>
       </div>
 
       {/* Generate Pokémon Section */}
-      <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-10 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">
+      <div className="bg-gray-900 p-6 sm:p-8 rounded-xl shadow-2xl border border-indigo-700/50 mb-10 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-indigo-400 drop-shadow-sm">
           Generate New Pokémon
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-300 mb-6">
           Unleash the power of AI to create a unique Pokémon!
-          (Cost: <span className="font-semibold text-red-600">{GENERATION_COST} Tokens</span>)
+          (Cost: <span className="font-semibold text-red-400">{GENERATION_COST} Tokens</span>)
         </p>
         <Button
           onClick={handleGeneratePokemon}
@@ -305,15 +318,15 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
 
       {/* Pokémon Collection */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left mb-4 sm:mb-0">Your Collection</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 text-center sm:text-left mb-4 sm:mb-0 drop-shadow-md">Your Collection</h2>
         {pokemons.length > 1 && (
           <div className="flex items-center gap-2 self-center sm:self-auto">
-            <label htmlFor="sort-order" className="text-gray-600 font-medium">Sort by:</label>
+            <label htmlFor="sort-order" className="text-gray-300 font-medium">Sort by:</label>
             <select
               id="sort-order"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-8 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-8 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-200"
             >
               <option value="date-desc">Newest First</option>
               <option value="date-asc">Oldest First</option>
@@ -328,11 +341,11 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
       
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
-          <Loader2 className="animate-spin h-10 w-10 text-indigo-600" />
-          <p className="ml-4 text-lg text-gray-600">Loading your Pokémon...</p>
+          <Loader2 className="animate-spin h-10 w-10 text-indigo-400" />
+          <p className="ml-4 text-lg text-gray-300">Loading your Pokémon...</p>
         </div>
       ) : sortedPokemons.length === 0 ? (
-        <p className="text-center text-gray-500 text-xl py-12 bg-white rounded-xl shadow-md">
+        <p className="text-center text-gray-400 text-xl py-12 bg-gray-900 rounded-xl shadow-md border border-gray-800">
           You haven't generated any Pokémon yet. Start creating above!
         </p>
       ) : (
@@ -340,9 +353,9 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
           {sortedPokemons.map((pokemon) => {
             const resellValue = getRarityResellValue(pokemon.rarity);
             return (
-              <div key={pokemon.id} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-200 flex flex-col">
+              <div key={pokemon.id} className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 flex flex-col">
                 <div className="flex-grow">
-                  <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                  <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center p-2">
                     <img
                       src={`data:image/png;base64,${pokemon.imageBase64}`}
                       alt={pokemon.name}
@@ -350,19 +363,19 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
                       loading="lazy"
                     />
                     {pokemon.status === PokemonStatus.RESOLD && (
-                      <div className="absolute inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center text-white text-lg font-bold">
+                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center text-red-400 text-lg font-bold drop-shadow-lg">
                         RESOLD
                       </div>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900 flex items-center justify-between">
+                  <h3 className="text-xl font-semibold mb-2 text-gray-100 flex items-center justify-between">
                     <span>{pokemon.name}</span>
                     <span className={`text-xs px-2 py-1 rounded-full ${getRarityColor(pokemon.rarity)}`}>
                       {pokemon.rarity}
                     </span>
                   </h3>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
+                <div className="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center text-sm text-gray-400">
                   <span>Generated: {new Date(pokemon.generatedAt).toLocaleDateString()}</span>
                   {pokemon.status === PokemonStatus.OWNED ? (
                     <Button
@@ -371,10 +384,10 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
                       onClick={() => handleResellConfirmation(pokemon.id, pokemon.name)}
                       aria-label={`Resell ${pokemon.name} for ${resellValue} tokens`}
                     >
-                      <Coins className="h-4 w-4 mr-1" /> Resell (+{resellValue})
+                      <Coins className="h-4 w-4 mr-1 text-lime-300" /> Resell (+{resellValue})
                     </Button>
                   ) : (
-                    <span className="text-red-500 flex items-center gap-1">
+                    <span className="text-red-400 flex items-center gap-1 drop-shadow-sm">
                       <RefreshCw className="h-4 w-4" /> Resold
                     </span>
                   )}
@@ -386,16 +399,16 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onExi
       )}
 
       <Modal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        title={modalTitle}
-        onConfirm={modalOnConfirm}
-        confirmButtonText="Resell"
+        isOpen={isGenericModalOpen}
+        onClose={closeGenericModal}
+        title={genericModalTitle}
+        onConfirm={genericModalOnConfirm}
+        confirmButtonText={genericModalConfirmButtonText}
         cancelButtonText="Cancel"
-        confirmButtonVariant="primary" // Changed to primary for resell
-        isLoading={isModalConfirmLoading}
+        confirmButtonVariant={genericModalConfirmButtonVariant}
+        isLoading={isGenericModalConfirmLoading}
       >
-        {modalContent}
+        {genericModalContent}
       </Modal>
     </div>
   );

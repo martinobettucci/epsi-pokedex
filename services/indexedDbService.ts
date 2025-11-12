@@ -263,8 +263,9 @@ export class IndexedDbService {
   }
 
   /**
-   * Clears all current game data (pokemons and resets token balance).
-   * Also resets the app state to indicate no active game.
+   * Clears all current game data (pokemons and resets token balance),
+   * and sets the app state to indicate a new active game.
+   * This is used when explicitly starting a new game.
    * @returns A promise that resolves when the data is cleared.
    */
   public async clearCurrentGameData(): Promise<void> {
@@ -288,8 +289,44 @@ export class IndexedDbService {
         putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
       });
 
-      // Update app state to reflect a new game started or no active game
+      // Update app state to reflect a new game started
       const newAppState: AppState = { id: 'currentAppState', hasActiveGame: true, lastPlayedDate: new Date().toISOString() };
+      await new Promise<void>((resolve, reject) => {
+        const putRequest = appStateStore.put(newAppState);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+    });
+  }
+
+  /**
+   * Resets current game data (pokemons and token balance) and deactivates the game state.
+   * This is used after archiving a game or when explicitly exiting a game without continuing.
+   * @returns A promise that resolves when the data is cleared and state is deactivated.
+   */
+  public async resetGameAfterArchive(): Promise<void> {
+    return this.withTransaction<void>([StoreNames.Pokemons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
+      const pokemonStore = transaction.objectStore(StoreNames.Pokemons);
+      const settingsStore = transaction.objectStore(StoreNames.Settings);
+      const appStateStore = transaction.objectStore(StoreNames.AppState);
+
+      // Clear all pokemons
+      await new Promise<void>((resolve, reject) => {
+        const clearRequest = pokemonStore.clear();
+        clearRequest.onsuccess = () => resolve();
+        clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+
+      // Reset token balance
+      const initialBalance: TokenBalance = { id: 'tokenBalance', amount: 100 };
+      await new Promise<void>((resolve, reject) => {
+        const putRequest = settingsStore.put(initialBalance);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+
+      // Update app state to reflect no active game
+      const newAppState: AppState = { id: 'currentAppState', hasActiveGame: false, lastPlayedDate: new Date().toISOString() };
       await new Promise<void>((resolve, reject) => {
         const putRequest = appStateStore.put(newAppState);
         putRequest.onsuccess = () => resolve();
