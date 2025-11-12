@@ -9,6 +9,7 @@ Cette spécification décrit un point d’entrée HTTP public permettant de gén
 * **Méthode** : `GET`
 * **URL complète** : `https://epsi.journeesdecouverte.fr:22222/v1/generate`
 * **Auth** : optionnelle selon le déploiement (ex. `Authorization: Bearer <token>`)
+* **Base configurable** : l’application cliente lit une variable d’environnement publique `VITE_API_BASE_URL`, qui vaut par défaut `https://epsi.journeesdecouverte.fr:22222/v1`.
 
 Aucune donnée n’est transmise en entrée. Chaque appel produit un Minimon aléatoire selon les modèles internes du service.
 
@@ -66,7 +67,8 @@ Aucune donnée n’est transmise en entrée. Chaque appel produit un Minimon al�
 
 ```js
 async function generateMinimon() {
-  const res = await fetch("https://epsi.journeesdecouverte.fr:22222/v1/generate", {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'https://epsi.journeesdecouverte.fr:22222/v1';
+  const res = await fetch(`${apiBaseUrl}/generate`, {
     method: "GET",
     headers: {
       // Ajouter un token d’accès si nécessaire

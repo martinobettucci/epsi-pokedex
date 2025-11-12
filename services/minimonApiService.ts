@@ -2,7 +2,15 @@
 
 import { Minimon, MinimonStatus, MinimonRarity, ApiErrorResponse } from '../types';
 
-const API_BASE_URL = 'https://epsi.journeesdecouverte.fr:22222/v1'; // Changed to HTTPS
+const DEFAULT_API_BASE_URL = 'https://epsi.journeesdecouverte.fr:22222/v1'; // Changed to HTTPS
+const API_BASE_URL = (() => {
+  // Public Vite env vars (prefixed with VITE_) are exposed to the client bundle.
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+  if (!configuredUrl) {
+    return DEFAULT_API_BASE_URL;
+  }
+  return configuredUrl.replace(/\/+$/, ''); // Remove trailing slashes to keep `/generate` calls clean.
+})();
 const AUTH_TOKEN = 'EPSI'; // Statically defined Bearer token as per docs/03-authentication.md
 const REQUEST_TIMEOUT = 30000; // 30 seconds timeout for the API request
 

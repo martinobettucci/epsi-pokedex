@@ -54,7 +54,8 @@ Chaque requête adressée à l’API doit inclure l’en-tête HTTP `Authorizati
 
 ```js
 async function generateMinimon() {
-  const res = await fetch("http://epsi.journeesdecouverte.fr:22222/v1/generate", {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'https://epsi.journeesdecouverte.fr:22222/v1';
+  const res = await fetch(`${apiBaseUrl}/generate`, {
     method: "GET",
     headers: {
       "Authorization": "Bearer EPSI"
@@ -76,6 +77,7 @@ async function generateMinimon() {
 ## Points de vigilance
 
 * Le jeton **EPSI** doit être conservé côté client dans une configuration sécurisée (variable d’environnement, configuration build).
+* La variable publique `VITE_API_BASE_URL` permet de rediriger les appels vers un autre endpoint ; sa valeur par défaut reste `https://epsi.journeesdecouverte.fr:22222/v1`.
 * Ne jamais inclure le jeton dans le corps de la requête ou dans l’URL.
 * Le serveur peut désactiver l’authentification si `BEARER_TOKEN` est vide.
 * Cette méthode ne fournit pas de contrôle d’accès granulaire : elle sert uniquement à restreindre l’accès à un usage autorisé.
