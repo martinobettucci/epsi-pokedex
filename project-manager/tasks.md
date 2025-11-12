@@ -31,3 +31,5 @@ This document tracks all development tasks for the Pokémon Generator applicatio
 ## Planned
 - [ ] Rehault the full app to be a modern sleek dark neon stylish app with dynamic animations and particle effects.
 - [ ] Add a welcome page that teach the user about the game and its mechanics
+- [ ] Add a NEW GAME that resets the pokedex of the user
+- [ ] Add an hall of fame to show the best older pokedex the user have created (you must keep an history on new game)
