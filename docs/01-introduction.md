@@ -11,6 +11,7 @@ L’application permet à chaque utilisateur de générer, posséder et revendre
 * Lors de la première connexion, l’utilisateur reçoit **100 jetons**.
 * Chaque génération de Minimon coûte **10 jetons**.
 * Lorsqu’un Minimon est revendu, l’utilisateur récupère **5 jetons**.
+* À la fin d’une session archivée, chaque jeton restant est **compté comme 1 point supplémentaire** dans le score Minidek total.
 * Le solde de jetons ne peut jamais être négatif.
 
 Le solde et les actifs sont sauvegardés localement pour permettre une expérience **offline**.

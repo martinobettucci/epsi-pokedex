@@ -3,6 +3,10 @@
     "cancel": "Annuler",
     "close": "Fermer"
   },
+  "footer": {
+    "prefix": "Créé avec",
+    "suffix": "et fièrement propulsé par l’IA de"
+  },
   "app": {
     "loading": "Chargement de Minimon Lab..."
   },
@@ -39,7 +43,7 @@
     "guide": {
       "title": "Guide stratégique",
       "paragraph1": "Lance le générateur, poursuis les pics de rareté et crée de l'élan : roule jusqu'à obtenir une tête d'affiche, garde deux piliers S dans ton deck et laisse des supports B/C agiles combler les trous. Les communs en double ? Revends-les rapidement pour récupérer des jetons et relance un nouvel appel: la vitesse bat la thésaurisation.",
-      "paragraph2": "Avant chaque grosse poussée, jette un œil à ton score Minidek et à ta réserve de jetons : archive une série chaude dans le Hall of Fame quand la courbe culmine, puis replonge-toi pour la prochaine méta. Considère chaque session comme une saison : apprends, itère et garde les lumières du labo allumées.",
+      "paragraph2": "Avant chaque grosse poussée, jette un œil à ton score Minidek et à ta réserve de jetons : les jetons que tu conserves deviennent autant de points quand tu archives, alors sauvegarde une série chaude dans le Hall of Fame quand la courbe culmine puis replonge-toi pour la prochaine méta. Considère chaque session comme une saison : apprends, itère et garde les lumières du labo allumées.",
       "paragraph3": "Tu te sens imbattable ? Clique sur “Nouvelle partie”, compose ta formation idéale et inonde les réseaux sociaux avec ton meilleur deck Minimon en citant “P2Enjoy” pour que toute la communauté sache qui impose le rythme."
     },
     "languageLabel": "Langue"
@@ -102,6 +106,7 @@
     "modalNoMinimon": "Aucun Minimon dans cette archive.",
     "backLabel": "Retour à l'accueil",
     "share": {
+      "proudLabel": "Partagez fièrement ce deck de championnat",
       "title": "Exporter et partager",
       "description": "Signe et exporte ce deck archivé pour le publier sur ton réseau préféré avec un score certifié.",
       "buttonLabel": "Partager ce deck",

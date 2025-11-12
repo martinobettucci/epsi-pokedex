@@ -74,7 +74,7 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
     try {
       const fetchedArchives = await indexedDbService.getArchivedGames();
       // Sort archives by date, newest first
-      setArchives(fetchedArchives.sort((a, b) => new Date(b.archiveDate).getTime() - new Date(a.archiveDate).getTime()));
+      setArchives(fetchedArchives);
     } catch (error) {
       console.error('Failed to fetch archived games:', error);
       // Optionally show an error message
@@ -82,6 +82,10 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
       setIsLoading(false);
     }
   }, []);
+
+  const sortedArchives = useMemo(() => {
+    return [...archives].sort((a, b) => b.score - a.score);
+  }, [archives]);
 
   useEffect(() => {
     fetchArchives();
@@ -215,25 +219,54 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
           {t('hallOfFame.empty')}
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {archives.map((archive) => (
-              <div
-                key={archive.id}
-                className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-fuchsia-400 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200 cursor-pointer flex flex-col justify-between"
-                onClick={() => openArchiveDetails(archive)}
-                role="button"
-                tabIndex={0}
-                aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
-              >
-              <div>
-                <h3 className="text-2xl font-bold text-gray-100 mb-2 flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-md" />
-                  {t('hallOfFame.detailsBadge')} <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">
-                  {t('hallOfFame.archivedOn')} {new Date(archive.archiveDate).toLocaleDateString()}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-gray-200">
+        <>
+          {sortedArchives.length > 0 && (
+            <div className="flex flex-col gap-4 mb-6">
+              {sortedArchives.slice(0, 3).map((archive, index) => (
+                <div
+                  key={archive.id}
+                  className={`flex flex-col rounded-2xl p-6 shadow-2xl border transition-all duration-200 cursor-pointer ${
+                    index === 0
+                      ? 'bg-gradient-to-br from-amber-500/25 to-amber-400/10 border-amber-300/60 text-white'
+                      : index === 1
+                        ? 'bg-gradient-to-br from-slate-200/10 to-slate-900/70 border-slate-200/40 text-white'
+                        : 'bg-gradient-to-br from-amber-900/10 to-amber-900/0 border-amber-700/40 text-white'
+                  }`}
+                  onClick={() => openArchiveDetails(archive)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
+                >
+                <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
+                  <div className="flex flex-col">
+                    <h3 className="text-3xl font-extrabold tracking-wide">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'} {t('hallOfFame.detailsBadge')}
+                    </h3>
+                    <p className="text-xs text-gray-200 mt-1">
+                      {t('hallOfFame.archivedOn')} {new Date(archive.archiveDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-2xl font-bold text-amber-200">{archive.score}</span>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs uppercase tracking-widest text-gray-100">
+                        {t('hallOfFame.share.proudLabel')}
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShareArchive(archive);
+                        }}
+                        disabled={shareLoading}
+                      >
+                        {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-4 text-sm text-gray-100">
                   <span className="flex items-center gap-1">
                     <Gem className="h-4 w-4 text-lime-300" /> {t('hallOfFame.tokens')} {archive.tokenBalance}
                   </span>
@@ -241,30 +274,63 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                     <Coins className="h-4 w-4 text-cyan-300" /> {t('hallOfFame.minimon')} {archive.minimons.length}
                   </span>
                 </div>
-              </div>
-                <div className="mt-4 pt-4 border-t border-gray-800 text-right space-y-2">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
-                      {t('hallOfFame.viewDetails')}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleShareArchive(archive); }}
-                      disabled={shareLoading}
-                    >
-                      {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
-                    </Button>
-                  </div>
-                  {shareError && (
-                    <p className="text-xs text-right text-red-400">
-                      {t('hallOfFame.share.error', { error: shareError })}
-                    </p>
-                  )}
                 </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+          {sortedArchives.length > 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedArchives.slice(3).map((archive) => (
+                <div
+                  key={archive.id}
+                  className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-fuchsia-400 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                  onClick={() => openArchiveDetails(archive)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
+                >
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-100 mb-2 flex items-center gap-2">
+                      <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-md" />
+                      {t('hallOfFame.detailsBadge')} <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                      {t('hallOfFame.archivedOn')} {new Date(archive.archiveDate).toLocaleDateString()}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-gray-200">
+                      <span className="flex items-center gap-1">
+                        <Gem className="h-4 w-4 text-lime-300" /> {t('hallOfFame.tokens')} {archive.tokenBalance}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Coins className="h-4 w-4 text-cyan-300" /> {t('hallOfFame.minimon')} {archive.minimons.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-800 text-right space-y-2">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
+                        {t('hallOfFame.viewDetails')}
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleShareArchive(archive); }}
+                        disabled={shareLoading}
+                      >
+                        {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
+                      </Button>
+                    </div>
+                    {shareError && (
+                      <p className="text-xs text-right text-red-400">
+                        {t('hallOfFame.share.error', { error: shareError })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {selectedArchive && (

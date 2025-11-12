@@ -179,6 +179,17 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           {t('welcome.modal.warning')}
         </p>
       </Modal>
+      <footer className="mt-8 text-center text-xs text-gray-400">
+        {t('footer.prefix')} <span aria-hidden="true">♥</span> {t('footer.suffix')}{' '}
+        <a
+          href="https://p2enjoy.studio"
+          target="_blank"
+          rel="noreferrer"
+          className="text-indigo-300 hover:underline"
+        >
+          P2Enjoy Studio
+        </a>
+      </footer>
     </div>
   );
 };

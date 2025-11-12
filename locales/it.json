@@ -3,6 +3,10 @@
     "cancel": "Annulla",
     "close": "Chiudi"
   },
+  "footer": {
+    "prefix": "Creato con",
+    "suffix": "e orgogliosamente alimentato dall’IA di"
+  },
   "app": {
     "loading": "Caricamento di Minimon Lab..."
   },
@@ -39,7 +43,7 @@
     "guide": {
       "title": "Guida strategica",
       "paragraph1": "Avvia il generatore, cerca i picchi di rarità e crea slancio: continua a evocare finché non ottieni un protagonista, conserva due ancore S nel tuo mazzo e lascia che i supporti B/C agili colmino gli spazi. Doppie comuni? Rivendile subito per avere gettoni e reinvestili nelle prossime evocazioni—la velocità batte l'accumulo.",
-      "paragraph2": "Prima di ogni grande spinta, dai un'occhiata al tuo punteggio Minidek e alla scorta di gettoni: archivia una serie calda nell’Hall of Fame quando la curva sale, poi torna in azione per la prossima meta. Considera ogni sessione come una stagione: impara, iterazioni e mantieni accese le luci del laboratorio.",
+      "paragraph2": "Prima di ogni grande spinta, dai un'occhiata al tuo punteggio Minidek e alla scorta di gettoni: i gettoni che tieni diventano tanti punti quando archivi, quindi salve una serie calda nell’Hall of Fame quando la curva sale e poi torna in azione per la prossima meta. Considera ogni sessione come una stagione: impara, iterazioni e mantieni accese le luci del laboratorio.",
       "paragraph3": "Ti senti inarrestabile? Premi “Nuova partita”, crea il tuo lineup ideale e inonda i social con i migliori deck Minimon citando “P2Enjoy” così che tutta la community sappia chi detta il ritmo."
     },
     "languageLabel": "Lingua"
@@ -103,6 +107,7 @@
     "backLabel": "Torna all'inizio"
     ,
     "share": {
+      "proudLabel": "Condividi con orgoglio questo deck da campionato",
       "title": "Esporta e condividi",
       "description": "Firma ed esporta questo deck archiviato per pubblicarlo sul tuo social preferito con il punteggio autenticato.",
       "buttonLabel": "Condividi questo deck",

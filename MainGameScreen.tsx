@@ -1,12 +1,12 @@
 // MainGameScreen.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { indexedDbService } from './services/indexedDbService';
 import { minimonApiService } from './services/minimonApiService'; // Updated import
 import { Minimon, TokenBalance, AppMessage, MinimonStatus, MinimonRarity } from './types'; // Updated types
 import Button from './components/Button';
 import Modal from './components/Modal';
-import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut } from 'lucide-react';
+import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut, Crown } from 'lucide-react';
 import { getRarityResellValue, getRarityMinidekScoreValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
 import { useTranslation } from './i18n';
 
@@ -19,6 +19,10 @@ interface MainGameScreenProps {
 
 const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEndGameAndArchive }) => {
   const { t } = useTranslation();
+  const [newMinimonId, setNewMinimonId] = useState<string | null>(null);
+  const [badgeVisible, setBadgeVisible] = useState(false);
+  const badgeHideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const badgeClearTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [minimons, setMinimons] = useState<Minimon[]>([]); // Renamed state
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -68,6 +72,13 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     fetchAppData();
   }, [fetchAppData]);
 
+  useEffect(() => {
+    return () => {
+      if (badgeHideTimeout.current) clearTimeout(badgeHideTimeout.current);
+      if (badgeClearTimeout.current) clearTimeout(badgeClearTimeout.current);
+    };
+  }, []);
+
   const handleGenerateMinimon = async () => { // Renamed function
     if (tokenBalance < GENERATION_COST) {
       showMessage('warning', t('main.messages.needTokens', { cost: GENERATION_COST, balance: tokenBalance }));
@@ -87,6 +98,20 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       await indexedDbService.addMinimon(newMinimon); // Updated call
       setMinimons((prevMinimons) => [newMinimon, ...prevMinimons]); // Updated state
       showMessage('success', t('main.messages.generateSuccess', { name: newMinimon.name, rarity: newMinimon.rarity }));
+      setNewMinimonId(newMinimon.id);
+      setBadgeVisible(true);
+      if (badgeHideTimeout.current) {
+        clearTimeout(badgeHideTimeout.current);
+      }
+      if (badgeClearTimeout.current) {
+        clearTimeout(badgeClearTimeout.current);
+      }
+      badgeHideTimeout.current = setTimeout(() => {
+        setBadgeVisible(false);
+        badgeClearTimeout.current = setTimeout(() => {
+          setNewMinimonId(null);
+        }, 600);
+      }, 5000);
       
     } catch (error) {
       console.error("Error generating Minimon:", error); // Updated text
@@ -209,7 +234,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   }, []);
   
   const minidekScore = useMemo(() => { // Renamed variable
-    return minimons.reduce((score, minimon) => { // Updated variable
+    const baseScore = minimons.reduce((score, minimon) => { // Updated variable
       // Validate rarity before using it for score calculation
       const minimonRarity = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : MinimonRarity.F;
       if (minimon.status === MinimonStatus.OWNED) { // Updated type
@@ -220,7 +245,8 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       }
       return score;
     }, 0);
-  }, [minimons]); // Updated dependency
+    return baseScore + tokenBalance;
+  }, [minimons, tokenBalance]); // Updated dependency
 
   const sortedMinimons = useMemo(() => { // Renamed variable
     const minimonsToSort = [...minimons]; // Updated variable
@@ -373,7 +399,21 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
             const resellValue = getRarityResellValue(validRarityForResell);
             
             return (
-              <div key={minimon.id} className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 flex flex-col">
+              <div
+                key={minimon.id}
+                className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 flex flex-col relative"
+              >
+                {newMinimonId === minimon.id && (
+                  <span
+                    aria-live="polite"
+                    className={`absolute top-3 right-3 z-50 flex items-center gap-1 rounded-full bg-amber-200 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-amber-900 shadow-xl transition-all duration-700 pointer-events-none ${
+                      badgeVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'
+                    }`}
+                  >
+                    <Crown className="h-3.5 w-3.5" />
+                    <span>New!</span>
+                  </span>
+                )}
                 <div className="flex-grow">
                   <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center p-2">
                     <img

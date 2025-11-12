@@ -21,16 +21,17 @@ const App: React.FC = () => {
   const [hasUnarchivedProgress, setHasUnarchivedProgress] = useState<boolean>(false);
 
   // Function to calculate score for archiving
-  const calculateMinidekScore = useCallback((minimons: Minimon[]) => {
-    return minimons.reduce((score, minimon) => {
+  const calculateMinidekScore = useCallback((minimons: Minimon[], tokenBalance = 0) => {
+    const baseScore = minimons.reduce((score, minimon) => {
       if (minimon.status === MinimonStatus.OWNED) {
-        return score + getRarityMinidekScoreValue(minimon.rarity); // Use rarity-based score
+        return score + getRarityMinidekScoreValue(minimon.rarity);
       }
       if (minimon.status === MinimonStatus.RESOLD) {
-        return score + 1; // 1 point for each resold Minimon
+        return score + 1;
       }
       return score;
     }, 0);
+    return baseScore + tokenBalance;
   }, []);
 
 
@@ -63,13 +64,35 @@ const App: React.FC = () => {
     initializeApp();
   }, [initializeApp]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const host = window.location.hostname;
+    if (!host.endsWith('.lelabs.tech')) {
+      return;
+    }
+    if (document.querySelector('script[data-website-id="2e3013b5-1045-41e9-8afb-8ab45d6536ec"]')) {
+      return;
+    }
+    const script = document.createElement('script');
+    script.async = true;
+    script.defer = true;
+    script.src = 'https://analytics.p2enjoy.studio/umami.js';
+    script.setAttribute('data-website-id', '2e3013b5-1045-41e9-8afb-8ab45d6536ec');
+    document.body.appendChild(script);
+    return () => {
+      script.remove();
+    };
+  }, []);
+
   const handleStartNewGame = useCallback(async (archiveCurrent: boolean) => {
     setIsLoadingApp(true);
     try {
       if (archiveCurrent) {
         const minimonsToArchive = await indexedDbService.getMinimons();
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculateMinidekScore(minimonsToArchive); // Calculate score using the helper
+        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount); // Calculate score using the helper
 
         await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
       }
@@ -106,7 +129,7 @@ const App: React.FC = () => {
       const minimonsToArchive = await indexedDbService.getMinimons();
       if (minimonsToArchive.length > 0) {
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculateMinidekScore(minimonsToArchive);
+        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount);
 
         await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
       }

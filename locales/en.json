@@ -3,6 +3,10 @@
     "cancel": "Cancel",
     "close": "Close"
   },
+  "footer": {
+    "prefix": "Made with",
+    "suffix": "and proudly using AI by"
+  },
   "app": {
     "loading": "Loading Minimon Lab..."
   },
@@ -39,7 +43,7 @@
     "guide": {
       "title": "Strategic Guide",
       "paragraph1": "Spin up the generator, chase rarity spikes, and build momentum: roll until you land a headliner, keep two S-tier anchors in your deck, then let agile B/C supporters fill the gaps. Duplicate commons? Flip them fast for tokens and pour that fuel back into fresh summons—velocity beats hoarding.",
-      "paragraph2": "Before every big push, glance at your Minidek score and token stash: archive a hot streak to the Hall of Fame when the curve peaks, then dive back in for the next meta shift. Treat every session like a seasonal ladder—learn, iterate, and keep the lab lights on.",
+      "paragraph2": "Before every big push, glance at your Minidek score and token stash: the tokens you’re still holding will become a matching number of points when you archive, so bank a hot streak to the Hall of Fame when the curve peaks then dive back in for the next meta shift. Treat every session like a seasonal ladder—learn, iterate, and keep the lab lights on.",
       "paragraph3": "Feeling unstoppable? Smash “Start New Game”, craft your dream lineup, then flood social networks with your best Minimon decks while quoting “P2Enjoy” so the whole community knows who’s setting the pace."
     },
     "languageLabel": "Language"
@@ -103,6 +107,7 @@
     "backLabel": "Back to Welcome"
   ,
     "share": {
+      "proudLabel": "Proudly share this championship grade deck",
       "title": "Export & Share",
       "description": "Sign and export this Archived Minidek to post on your favorite social network with the certified score.",
       "buttonLabel": "Share this deck",
