@@ -6,6 +6,8 @@ import Modal from './components/Modal';
 import { Sparkles, Coins, Gem, Trophy, PlayCircle, ArrowRightCircle } from 'lucide-react';
 import { MinimonRarity } from './types'; // Import MinimonRarity for display
 import { getRarityResellValue, getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity helpers
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 interface WelcomeScreenProps {
   canContinueGame: boolean;
@@ -22,6 +24,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onContinueGame,
   onViewHallOfFame,
 }) => {
+  const { t } = useTranslation();
   const [isNewGameModalOpen, setIsNewGameModalOpen] = useState(false);
 
   const handleStartNewGameClick = async () => {
@@ -37,32 +40,43 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
-      <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full p-8 sm:p-10 text-center border border-indigo-700/50">
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-cyan-400 mb-6 drop-shadow-lg tracking-wide">
-          Minimon Lab
-        </h1>
-        <p className="text-lg text-gray-300 mb-8 max-w-prose mx-auto">
-          Welcome, Trainer! Unleash your creativity and generate unique Minimon using cutting-edge AI. Collect them, manage your tokens, and strive for the ultimate Minidek!
-        </p>
+      <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full p-8 sm:p-10 text-left border border-indigo-700/50 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-3 md:max-w-2xl">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
+              {t('welcome.title')}
+            </h1>
+            <p className="text-lg text-gray-300 max-w-prose">
+              {t('welcome.subtitle')}
+            </p>
+          </div>
+          <LanguageSwitcher />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 text-left">
           {/* Generation Card */}
           <div className="bg-gray-900 p-6 rounded-xl shadow-lg flex flex-col items-center border border-blue-700 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200">
             <h2 className="text-xl font-bold text-blue-400 mb-3 flex items-center gap-2 drop-shadow-sm tracking-tight">
               <Sparkles className="h-6 w-6 text-blue-400" />
-              Generation
+              {t('welcome.cards.generation.title')}
             </h2>
-            <p className="text-gray-300 mb-2 flex items-center gap-1">Each new Minimon costs <span className="font-bold text-red-400 flex items-center"><Coins className="h-4 w-4 mr-1 text-red-400"/>10 tokens</span>.</p>
-            <p className="text-sm text-gray-400">Discover unique creatures with varying rarities!</p>
+            <p className="text-gray-300 mb-2 flex items-center gap-1">
+              {t('welcome.cards.generation.cost', { cost: 10 })}
+            </p>
+            <p className="text-sm text-gray-400">
+              {t('welcome.cards.generation.description')}
+            </p>
           </div>
 
           {/* Reselling Card */}
           <div className="bg-gray-900 p-6 rounded-xl shadow-lg flex flex-col items-center border border-lime-700 hover:shadow-xl hover:shadow-lime-500/30 transition-all duration-200">
             <h2 className="text-xl font-bold text-lime-300 mb-3 flex items-center gap-2 drop-shadow-sm tracking-tight">
               <Coins className="h-6 w-6 text-lime-300" />
-              Reselling
+              {t('welcome.cards.resell.title')}
             </h2>
-            <p className="text-gray-300 mb-2">Earn tokens back by reselling your Minimon:</p>
+            <p className="text-gray-300 mb-2">
+              {t('welcome.cards.resell.description')}
+            </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               {allRarities.map(rarity => (
                 <div key={`resell-${rarity}`} className="flex items-center gap-1 text-gray-200">
@@ -76,9 +90,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <div className="bg-gray-900 p-6 rounded-xl shadow-lg flex flex-col items-center border border-fuchsia-700 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200">
             <h2 className="text-xl font-bold text-fuchsia-400 mb-3 flex items-center gap-2 drop-shadow-sm tracking-tight">
               <Trophy className="h-6 w-6 text-fuchsia-400" />
-              Minidek Score
+              {t('welcome.cards.score.title')}
             </h2>
-            <p className="text-gray-300 mb-2">Earn points for OWNED Minimon based on rarity:</p>
+            <p className="text-gray-300 mb-2">
+              {t('welcome.cards.score.description')}
+            </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-2">
               {allRarities.map(rarity => (
                 <div key={`score-${rarity}`} className="flex items-center gap-1 text-gray-200">
@@ -86,7 +102,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 </div>
               ))}
             </div>
-            <p className="text-gray-300"><span className="font-bold text-blue-300">1 point</span> for each resold Minimon.</p>
+            <p className="text-gray-300">
+              {t('welcome.cards.score.bonus')}
+            </p>
           </div>
         </div>
 
@@ -99,7 +117,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               className="flex items-center justify-center gap-2"
             >
               <PlayCircle className="h-5 w-5" />
-              Continue Game
+              {t('welcome.actions.continue')}
             </Button>
           )}
           <Button
@@ -109,7 +127,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             className="flex items-center justify-center gap-2"
           >
             <Gem className="h-5 w-5" />
-            Start New Game
+            {t('welcome.actions.start')}
           </Button>
           <Button
             variant="secondary"
@@ -118,30 +136,47 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             className="flex items-center justify-center gap-2"
           >
             <Trophy className="h-5 w-5" />
-            Hall of Fame
+            {t('welcome.actions.hallOfFame')}
           </Button>
+        </div>
+
+        <div className="mt-10 relative sm:max-w-3xl sm:mx-auto">
+          <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/80 to-black border border-cyan-500/30 shadow-[0_20px_60px_rgba(15,118,255,0.45)]" />
+          <div className="relative rounded-2xl border border-cyan-500/30 p-6 text-left bg-gradient-to-br from-indigo-900/40 to-slate-900/50 shadow-lg">
+            <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-indigo-200 mb-3">
+              <ArrowRightCircle className="h-5 w-5 text-cyan-300" />
+              {t('welcome.guide.title')}
+            </div>
+            <p className="text-cyan-100 mb-3 leading-relaxed">
+              {t('welcome.guide.paragraph1')}
+            </p>
+            <p className="text-cyan-100 mb-3 leading-relaxed">
+              {t('welcome.guide.paragraph2')}
+            </p>
+            <p className="text-sm text-indigo-200">
+              {t('welcome.guide.paragraph3')}
+            </p>
+          </div>
         </div>
       </div>
 
       <Modal
         isOpen={isNewGameModalOpen}
         onClose={() => setIsNewGameModalOpen(false)}
-        title="Start New Game"
+        title={t('welcome.modal.title')}
         onConfirm={() => {
           onStartNewGame(true); // Archive current progress
           setIsNewGameModalOpen(false);
         }}
-        confirmButtonText="Archive & Start New"
-        cancelButtonText="Cancel"
+        confirmButtonText={t('welcome.modal.confirm')}
+        cancelButtonText={t('common.cancel')}
         confirmButtonVariant="primary"
       >
         <p className="text-gray-200">
-          You currently have unarchived progress with collected Minimon and tokens.
-          Would you like to save your current Minidek and token balance to the Hall of Fame
-          before starting a new game?
+          {t('welcome.modal.body')}
         </p>
         <p className="text-sm text-gray-400 mt-2">
-          If you start a new game without archiving, your current progress will be lost.
+          {t('welcome.modal.warning')}
         </p>
       </Modal>
     </div>

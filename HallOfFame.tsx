@@ -7,12 +7,14 @@ import Button from './components/Button';
 import { ArrowLeft, Trophy, Gem, Coins, Star, Loader2 } from 'lucide-react';
 import Modal from './components/Modal';
 import { rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Import rarityOrderMap and isValidMinimonRarity
+import { useTranslation } from 'react-i18next';
 
 interface HallOfFameProps {
   onBack: () => void;
 }
 
 const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const [archives, setArchives] = useState<ArchivedGame[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedArchive, setSelectedArchive] = useState<ArchivedGame | null>(null);
@@ -79,11 +81,11 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen relative z-10">
       <div className="flex items-center justify-between mb-8">
-        <Button variant="ghost" onClick={onBack} aria-label="Back to Welcome">
+        <Button variant="ghost" onClick={onBack} aria-label={t('hallOfFame.backLabel')}>
           <ArrowLeft className="h-6 w-6 text-gray-400 hover:text-indigo-400" />
         </Button>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-center text-fuchsia-400 drop-shadow-lg flex-grow tracking-wide">
-          Hall of Fame
+          {t('hallOfFame.title')}
         </h1>
         <div className="w-10"></div> {/* Spacer to balance header */}
       </div>
@@ -91,45 +93,45 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="animate-spin h-10 w-10 text-indigo-400" />
-          <p className="ml-4 text-lg text-gray-300">Loading archives...</p>
+          <p className="ml-4 text-lg text-gray-300">{t('hallOfFame.loading')}</p>
         </div>
       ) : archives.length === 0 ? (
         <p className="text-center text-gray-400 text-xl py-12 bg-gray-900 rounded-xl shadow-md border border-gray-800">
-          No archived games yet. Start a new game and achieve greatness!
+          {t('hallOfFame.empty')}
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {archives.map((archive) => (
-            <div
-              key={archive.id}
-              className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-fuchsia-400 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200 cursor-pointer flex flex-col justify-between"
-              onClick={() => openArchiveDetails(archive)}
-              role="button"
-              tabIndex={0}
-              aria-label={`View details for game archived on ${new Date(archive.archiveDate).toLocaleDateString()}`}
-            >
+              <div
+                key={archive.id}
+                className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-fuchsia-400 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                onClick={() => openArchiveDetails(archive)}
+                role="button"
+                tabIndex={0}
+                aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
+              >
               <div>
                 <h3 className="text-2xl font-bold text-gray-100 mb-2 flex items-center gap-2">
                   <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-md" />
-                  Game Score: <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
+                  {t('hallOfFame.detailsBadge')} <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
                 </h3>
                 <p className="text-sm text-gray-400 mb-4">
-                  Archived on: {new Date(archive.archiveDate).toLocaleDateString()}
+                  {t('hallOfFame.archivedOn')} {new Date(archive.archiveDate).toLocaleDateString()}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-gray-200">
                   <span className="flex items-center gap-1">
-                    <Gem className="h-4 w-4 text-lime-300" /> Tokens: {archive.tokenBalance}
+                    <Gem className="h-4 w-4 text-lime-300" /> {t('hallOfFame.tokens')} {archive.tokenBalance}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Coins className="h-4 w-4 text-cyan-300" /> Minimon: {archive.minimons.length}
+                    <Coins className="h-4 w-4 text-cyan-300" /> {t('hallOfFame.minimon')} {archive.minimons.length}
                   </span>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-800 text-right">
-                <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
-                  View Details
-                </Button>
-              </div>
+                <div className="mt-4 pt-4 border-t border-gray-800 text-right">
+                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
+                    {t('hallOfFame.viewDetails')}
+                  </Button>
+                </div>
             </div>
           ))}
         </div>
@@ -139,21 +141,23 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
         <Modal
           isOpen={isModalOpen}
           onClose={closeModal}
-          title={`Archived Game: ${new Date(selectedArchive.archiveDate).toLocaleDateString()}`}
-          cancelButtonText="Close"
+          title={t('hallOfFame.modalTitle', { date: new Date(selectedArchive.archiveDate).toLocaleDateString() })}
+          cancelButtonText={t('common.close')}
         >
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700">
               <span className="flex items-center gap-2 text-xl font-bold text-gray-100">
-                <Trophy className="h-6 w-6 text-yellow-500" /> Score: <span className="text-lime-300">{selectedArchive.score}</span>
+                <Trophy className="h-6 w-6 text-yellow-500" /> {t('hallOfFame.detailsBadge')} <span className="text-lime-300">{selectedArchive.score}</span>
               </span>
               <span className="flex items-center gap-2 text-lg font-semibold text-gray-200">
-                <Gem className="h-5 w-5 text-lime-300" /> Tokens: <span className="text-lime-300">{selectedArchive.tokenBalance}</span>
+                <Gem className="h-5 w-5 text-lime-300" /> {t('hallOfFame.tokens')} <span className="text-lime-300">{selectedArchive.tokenBalance}</span>
               </span>
             </div>
-            <h4 className="text-lg font-semibold text-gray-100 mt-6 mb-3">Minimon Collection ({selectedArchive.minimons.length}):</h4>
+            <h4 className="text-lg font-semibold text-gray-100 mt-6 mb-3">
+              {t('hallOfFame.modalCollectionTitle', { count: selectedArchive.minimons.length })}
+            </h4>
             {selectedArchive.minimons.length === 0 ? (
-              <p className="text-gray-400">No Minimon in this archive.</p>
+              <p className="text-gray-400">{t('hallOfFame.modalNoMinimon')}</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2">
                 {sortedMinimonsInArchive.map((minimon) => ( // Updated variable
@@ -166,14 +170,14 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                       />
                       {minimon.status === MinimonStatus.RESOLD && ( // Corrected condition
                         <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center text-red-400 text-xs font-bold drop-shadow-lg">
-                          RESOLD
+                          {t('main.collection.resold')}
                         </div>
                       )}
                     </div>
                     <div className="flex-grow">
                       <p className="font-semibold text-gray-100">
                         {minimon.name}
-                        {minimon.status === MinimonStatus.RESOLD && <span className="italic text-gray-500 ml-2">(Sold)</span>}
+                        {minimon.status === MinimonStatus.RESOLD && <span className="italic text-gray-500 ml-2">({t('main.collection.resold')})</span>}
                       </p>
                       {/* Validate rarity for display and styling */}
                       <span className={`text-xs px-2 py-0.5 rounded-full ${getRarityColor(minimon.rarity)}`}>

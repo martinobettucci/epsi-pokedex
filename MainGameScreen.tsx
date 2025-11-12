@@ -8,6 +8,7 @@ import Button from './components/Button';
 import Modal from './components/Modal';
 import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut } from 'lucide-react';
 import { getRarityResellValue, getRarityMinidekScoreValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
+import { useTranslation } from 'react-i18next';
 
 const GENERATION_COST = 10;
 
@@ -17,6 +18,7 @@ interface MainGameScreenProps {
 }
 
 const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEndGameAndArchive }) => {
+  const { t } = useTranslation();
   const [minimons, setMinimons] = useState<Minimon[]>([]); // Renamed state
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -56,11 +58,11 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       setMessage(null);
     } catch (error) {
       console.error("Failed to fetch app data:", error);
-      showMessage('error', 'Failed to load app data. Please try again.');
+      showMessage('error', t('main.messages.loadError'));
     } finally {
       setIsLoading(false);
     }
-  }, [showMessage]);
+  }, [showMessage, t]);
 
   useEffect(() => {
     fetchAppData();
@@ -68,7 +70,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
 
   const handleGenerateMinimon = async () => { // Renamed function
     if (tokenBalance < GENERATION_COST) {
-      showMessage('warning', `You need ${GENERATION_COST} tokens to generate a Minimon. Current balance: ${tokenBalance}.`); // Updated text
+      showMessage('warning', t('main.messages.needTokens', { cost: GENERATION_COST, balance: tokenBalance }));
       return;
     }
 
@@ -84,7 +86,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       const newMinimon = await minimonApiService.generateMinimon(); // Updated API call
       await indexedDbService.addMinimon(newMinimon); // Updated call
       setMinimons((prevMinimons) => [newMinimon, ...prevMinimons]); // Updated state
-      showMessage('success', `Awesome! You generated a new Minimon: ${newMinimon.name} (${newMinimon.rarity})!`); // Updated text
+      showMessage('success', t('main.messages.generateSuccess', { name: newMinimon.name, rarity: newMinimon.rarity }));
       
     } catch (error) {
       console.error("Error generating Minimon:", error); // Updated text
@@ -94,7 +96,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       await indexedDbService.updateTokenBalance(revertedBalance);
       // Use the error message directly from the API service, and append token refund info
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-      showMessage('error', `${errorMessage} Tokens refunded.`);
+      showMessage('error', `${errorMessage} ${t('main.messages.tokensRefunded')}`);
     } finally {
       setIsGeneratingMinimon(false); // Updated state
     }
@@ -123,11 +125,10 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     const resellValue = getRarityResellValue(currentRarity);
 
     setMinimonToResellId(minimonId); // Updated state
-    setGenericModalTitle('Resell Minimon'); // Updated text
+    setGenericModalTitle(t('main.modal.resellTitle'));
     setGenericModalContent(
       <p className="text-gray-200">
-        Are you sure you want to resell <span className="font-semibold text-cyan-400">{minimonName}</span>?
-        You will receive <span className="font-bold text-lime-300">{resellValue} tokens</span> back. This action cannot be undone.
+        {t('main.modal.resellBody', { name: minimonName, tokens: resellValue })}
       </p>
     );
     const onConfirmAction = () => {
@@ -150,11 +151,11 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
             );
             setTokenBalance(newBalance);
             
-            showMessage('success', `${minimonToResell.name} resold successfully! You gained ${currentResellValue} tokens.`); // Updated text
+            showMessage('success', t('main.messages.resellSuccess', { name: minimonToResell.name, tokens: currentResellValue }));
           }
         } catch (error) {
           console.error("Error reselling Minimon:", error); // Updated text
-          showMessage('error', `Failed to resell Minimon: ${error instanceof Error ? error.message : String(error)}`); // Updated text
+          showMessage('error', t('main.messages.resellFailed', { error: error instanceof Error ? error.message : String(error) }));
         } finally {
           setIsGenericModalConfirmLoading(false);
           closeGenericModal();
@@ -162,19 +163,16 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       })();
     };
     setGenericModalOnConfirm(() => onConfirmAction);
-    setGenericModalConfirmButtonText('Resell');
+    setGenericModalConfirmButtonText(t('main.modal.resellConfirm'));
     setGenericModalConfirmButtonVariant('primary');
     setIsGenericModalOpen(true);
   };
 
   const handleEndGameConfirmation = () => {
-    setGenericModalTitle('End Game & Archive Minidek'); // Updated title
+    setGenericModalTitle(t('main.modal.endGameTitle'));
     setGenericModalContent(
       <p className="text-gray-200">
-        Are you sure you want to end your current game session?
-        <br/><br/>
-        Your collected Minimon, current Minidek Score, and token balance will be <span className="font-bold text-lime-300">saved to the Hall of Fame</span>. // Updated text
-        Your current game progress will then be <span className="font-bold text-red-400">reset</span>.
+        {t('main.modal.endGameBody')}
       </p>
     );
     setGenericModalOnConfirm(() => async () => {
@@ -189,7 +187,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
         closeGenericModal();
       }
     });
-    setGenericModalConfirmButtonText('Archive & Exit');
+    setGenericModalConfirmButtonText(t('main.modal.endGameConfirm'));
     setGenericModalConfirmButtonVariant('primary');
     setIsGenericModalOpen(true);
   };
@@ -253,15 +251,15 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
-          Minimon Lab
-        </h1>
-        <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
-          <LogOut className="h-6 w-6 text-indigo-400" />
-          <span className="ml-2 hidden sm:inline">End Game</span>
-        </Button>
-      </div>
+    <div className="flex justify-between items-center mb-10">
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
+        {t('main.title')}
+      </h1>
+      <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
+        <LogOut className="h-6 w-6 text-indigo-400" />
+        <span className="ml-2 hidden sm:inline">{t('main.endGame')}</span>
+      </Button>
+    </div>
 
       {message && (
         <div
@@ -282,22 +280,22 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       {/* Stats Section: Token Balance & Minidek Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* Token Balance */}
-        <div className="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
-            <Gem className="h-7 w-7 text-lime-300 drop-shadow-md" />
-            Your Tokens:
-          </h2>
+          <div className="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700 flex items-center justify-between">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
+              <Gem className="h-7 w-7 text-lime-300 drop-shadow-md" />
+              {t('main.stats.tokens')}
+            </h2>
           <span className="text-3xl sm:text-4xl font-extrabold text-lime-300 leading-none drop-shadow-md">
             {tokenBalance}
           </span>
         </div>
         
         {/* Minidek Score */}
-        <div className="bg-indigo-900 p-4 sm:p-6 rounded-xl shadow-lg border border-indigo-700 flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
-            <Trophy className="h-7 w-7 text-fuchsia-400 drop-shadow-md" />
-            Minidek Score:
-          </h2>
+          <div className="bg-indigo-900 p-4 sm:p-6 rounded-xl shadow-lg border border-indigo-700 flex items-center justify-between">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
+              <Trophy className="h-7 w-7 text-fuchsia-400 drop-shadow-md" />
+              {t('main.stats.score')}
+            </h2>
           <span className="text-3xl sm:text-4xl font-extrabold text-fuchsia-400 leading-none drop-shadow-md">
             {minidekScore}
           </span>
@@ -338,33 +336,33 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 text-center sm:text-left mb-4 sm:mb-0 drop-shadow-md">Your Collection</h2>
         {minimons.length > 1 && ( // Updated state
-          <div className="flex items-center gap-2 self-center sm:self-auto">
-            <label htmlFor="sort-order" className="text-gray-300 font-medium">Sort by:</label>
-            <select
-              id="sort-order"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-8 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-200"
-            >
-              <option value="date-desc">Newest First</option>
-              <option value="date-asc">Oldest First</option>
-              <option value="rarity-desc">Rarity (High to Low)</option>
-              <option value="rarity-asc">Rarity (Low to High)</option>
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-            </select>
-          </div>
+        <div className="flex items-center gap-2 self-center sm:self-auto">
+          <label htmlFor="sort-order" className="text-gray-300 font-medium">{t('main.collection.sortBy')}</label>
+          <select
+            id="sort-order"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-8 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-200"
+          >
+            <option value="date-desc">{t('main.collection.options.newest')}</option>
+            <option value="date-asc">{t('main.collection.options.oldest')}</option>
+            <option value="rarity-desc">{t('main.collection.options.rarityDesc')}</option>
+            <option value="rarity-asc">{t('main.collection.options.rarityAsc')}</option>
+            <option value="name-asc">{t('main.collection.options.nameAsc')}</option>
+            <option value="name-desc">{t('main.collection.options.nameDesc')}</option>
+          </select>
+        </div>
         )}
       </div>
       
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="animate-spin h-10 w-10 text-indigo-400" />
-          <p className="ml-4 text-lg text-gray-300">Loading your Minimon...</p>
+          <p className="ml-4 text-lg text-gray-300">{t('main.loading')}</p>
         </div>
       ) : sortedMinimons.length === 0 ? ( // Updated variable
         <p className="text-center text-gray-400 text-xl py-12 bg-gray-900 rounded-xl shadow-md border border-gray-800">
-          You haven't generated any Minimon yet. Start creating above!
+          {t('main.collection.empty')}
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -398,19 +396,19 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
                   </h3>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center text-sm text-gray-400">
-                  <span>Generated: {new Date(minimon.generatedAt).toLocaleDateString()}</span>
+                  <span>{t('main.generatedOn')} {new Date(minimon.generatedAt).toLocaleDateString()}</span>
                   {minimon.status === MinimonStatus.OWNED ? (
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={() => handleResellConfirmation(minimon.id, minimon.name)} // Updated parameters
-                      aria-label={`Resell ${minimon.name} for ${resellValue} tokens`}
+                      aria-label={t('main.collection.ariaResell', { name: minimon.name, tokens: resellValue })}
                     >
-                      <Coins className="h-4 w-4 mr-1 text-lime-300" /> Resell (+{resellValue})
+                      <Coins className="h-4 w-4 mr-1 text-lime-300" /> {t('main.collection.resell', { tokens: resellValue })}
                     </Button>
                   ) : (
                     <span className="text-red-400 flex items-center gap-1 drop-shadow-sm">
-                      <RefreshCw className="h-4 w-4" /> Resold
+                      <RefreshCw className="h-4 w-4" /> {t('main.collection.resold')}
                     </span>
                   )}
                 </div>
@@ -426,7 +424,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
         title={genericModalTitle}
         onConfirm={genericModalOnConfirm}
         confirmButtonText={genericModalConfirmButtonText}
-        cancelButtonText="Cancel"
+        cancelButtonText={t('common.cancel')}
         confirmButtonVariant={genericModalConfirmButtonVariant}
         isLoading={isGenericModalConfirmLoading}
       >

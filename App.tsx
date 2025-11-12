@@ -9,10 +9,12 @@ import HallOfFame from './HallOfFame';
 import { Loader2 } from 'lucide-react';
 import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
 import { getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity score helper
+import { useTranslation } from 'react-i18next';
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('loading');
   const [isLoadingApp, setIsLoadingApp] = useState<boolean>(true);
   const [canContinueGame, setCanContinueGame] = useState<boolean>(false);
@@ -143,7 +145,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 to-indigo-950 text-gray-100">
         <Loader2 className="animate-spin h-12 w-12 text-indigo-400 mb-4" aria-label="Loading Minimon Lab" />
-        <p className="ml-4 text-xl text-gray-300 drop-shadow-lg">Loading Minimon Lab...</p>
+        <p className="ml-4 text-xl text-gray-300 drop-shadow-lg">{t('app.loading')}</p>
       </div>
     );
   }

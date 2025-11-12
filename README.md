@@ -20,3 +20,4 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RH8EA8_DSoicXdw1oQInI2
    - Set `GEMINI_API_KEY` in [.env.local](.env.local) if you rely on Gemini services for your build.
 3. Run the app:
    `npm run dev`
+4. Switch between English, Français, and Italiano from the language dropdown on the welcome screen to translate the entire interface instantly.

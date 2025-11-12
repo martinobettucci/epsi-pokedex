@@ -1,0 +1,105 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "app": {
+    "loading": "Loading Minimon Lab..."
+  },
+  "welcome": {
+    "title": "Minimon Lab",
+    "subtitle": "Welcome, Trainer! Unleash your creativity and generate unique Minimon using cutting-edge AI. Collect them, manage your tokens, and strive for the ultimate Minidek!",
+    "cards": {
+      "generation": {
+        "title": "Generation",
+        "cost": "Each new Minimon costs {{cost}} tokens.",
+        "description": "Discover unique creatures with varying rarities!"
+      },
+      "resell": {
+        "title": "Reselling",
+        "description": "Earn tokens back by reselling your Minimon:"
+      },
+      "score": {
+        "title": "Minidek Score",
+        "description": "Earn points for OWNED Minimon based on rarity:",
+        "bonus": "1 point for each resold Minimon."
+      }
+    },
+    "actions": {
+      "continue": "Continue Game",
+      "start": "Start New Game",
+      "hallOfFame": "Hall of Fame"
+    },
+    "modal": {
+      "title": "Start New Game",
+      "body": "You currently have unarchived progress with collected Minimon and tokens. Would you like to save your current Minidek and token balance to the Hall of Fame before starting a new game?",
+      "warning": "If you start a new game without archiving, your current progress will be lost.",
+      "confirm": "Archive & Start New"
+    },
+    "guide": {
+      "title": "Strategic Guide",
+      "paragraph1": "Spin up the generator, chase rarity spikes, and build momentum: roll until you land a headliner, keep two S-tier anchors in your deck, then let agile B/C supporters fill the gaps. Duplicate commons? Flip them fast for tokens and pour that fuel back into fresh summons—velocity beats hoarding.",
+      "paragraph2": "Before every big push, glance at your Minidek score and token stash: archive a hot streak to the Hall of Fame when the curve peaks, then dive back in for the next meta shift. Treat every session like a seasonal ladder—learn, iterate, and keep the lab lights on.",
+      "paragraph3": "Feeling unstoppable? Smash “Start New Game”, craft your dream lineup, then flood social networks with your best Minimon decks while quoting “P2Enjoy” so the whole community knows who’s setting the pace."
+    },
+    "languageLabel": "Language"
+  },
+  "main": {
+    "title": "Minimon Lab",
+    "endGame": "End Game",
+    "generatedOn": "Generated:",
+    "messages": {
+      "loadError": "Failed to load app data. Please try again.",
+      "needTokens": "You need {{cost}} tokens to generate a Minimon. Current balance: {{balance}}.",
+      "generateSuccess": "Awesome! You generated a new Minimon: {{name}} ({{rarity}})!",
+      "tokensRefunded": "Tokens refunded.",
+      "resellSuccess": "{{name}} resold successfully! You gained {{tokens}} tokens.",
+      "resellFailed": "Failed to resell Minimon: {{error}}",
+      "endGameFailed": "Failed to end game: {{error}}"
+    },
+    "stats": {
+      "tokens": "Your Tokens",
+      "score": "Minidek Score"
+    },
+    "collection": {
+      "title": "Your Collection",
+      "sortBy": "Sort by:",
+      "options": {
+        "newest": "Newest First",
+        "oldest": "Oldest First",
+        "rarityDesc": "Rarity (High to Low)",
+        "rarityAsc": "Rarity (Low to High)",
+        "nameAsc": "Name (A-Z)",
+        "nameDesc": "Name (Z-A)"
+      },
+      "empty": "You haven't generated any Minimon yet. Start creating above!",
+      "resell": "Resell (+{{tokens}})",
+      "resold": "Resold",
+      "ariaResell": "Resell {{name}} for {{tokens}} tokens"
+    },
+    "loading": "Loading your Minimon...",
+    "generateButton": "Generate Minimon",
+    "modal": {
+      "resellTitle": "Resell Minimon",
+      "resellBody": "Are you sure you want to resell {{name}}? You will receive {{tokens}} tokens back. This action cannot be undone.",
+      "resellConfirm": "Resell",
+      "endGameTitle": "End Game & Archive Minidek",
+      "endGameBody": "Are you sure you want to end your current game session? Your collected Minimon, current Minidek Score, and token balance will be saved to the Hall of Fame. Your current game progress will then be reset.",
+      "endGameConfirm": "Archive & Exit"
+    }
+  },
+  "hallOfFame": {
+    "title": "Hall of Fame",
+    "loading": "Loading archives...",
+    "empty": "No archived games yet. Start a new game and achieve greatness!",
+    "detailsBadge": "Game Score:",
+    "archivedOn": "Archived on:",
+    "tokens": "Tokens:",
+    "minimon": "Minimon:",
+    "viewDetails": "View Details",
+    "modalTitle": "Archived Game: {{date}}",
+    "modalCollectionTitle": "Minimon Collection ({{count}}):",
+    "modalNoMinimon": "No Minimon in this archive.",
+    "backLabel": "Back to Welcome"
+  }
+}

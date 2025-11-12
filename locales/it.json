@@ -1,0 +1,105 @@
+{
+  "common": {
+    "cancel": "Annulla",
+    "close": "Chiudi"
+  },
+  "app": {
+    "loading": "Caricamento di Minimon Lab..."
+  },
+  "welcome": {
+    "title": "Minimon Lab",
+    "subtitle": "Benvenuto, Allenatore! Libera la tua creatività e genera Minimon unici con un’IA all’avanguardia. Collezionali, gestisci i tuoi gettoni e punta al Minidek definitivo!",
+    "cards": {
+      "generation": {
+        "title": "Generazione",
+        "cost": "Ogni nuovo Minimon costa {{cost}} gettoni.",
+        "description": "Scopri creature uniche con rarezze diverse!"
+      },
+      "resell": {
+        "title": "Rivendita",
+        "description": "Recupera gettoni rivendendo i tuoi Minimon:"
+      },
+      "score": {
+        "title": "Punteggio Minidek",
+        "description": "Ottieni punti per i Minimon POSSEDUTI in base alla rarità:",
+        "bonus": "1 punto per ogni Minimon rivenduto."
+      }
+    },
+    "actions": {
+      "continue": "Continua partita",
+      "start": "Nuova partita",
+      "hallOfFame": "Hall of Fame"
+    },
+    "modal": {
+      "title": "Nuova partita",
+      "body": "Hai progressi non archiviati con Minimon raccolti e gettoni. Vuoi salvare il tuo Minidek e il saldo gettoni nell’Hall of Fame prima di iniziare una nuova partita?",
+      "warning": "Se inizi una nuova partita senza archiviare, i progressi attuali verranno persi.",
+      "confirm": "Archivia e ricomincia"
+    },
+    "guide": {
+      "title": "Guida strategica",
+      "paragraph1": "Avvia il generatore, cerca i picchi di rarità e crea slancio: continua a evocare finché non ottieni un protagonista, conserva due ancore S nel tuo mazzo e lascia che i supporti B/C agili colmino gli spazi. Doppie comuni? Rivendile subito per avere gettoni e reinvestili nelle prossime evocazioni—la velocità batte l'accumulo.",
+      "paragraph2": "Prima di ogni grande spinta, dai un'occhiata al tuo punteggio Minidek e alla scorta di gettoni: archivia una serie calda nell’Hall of Fame quando la curva sale, poi torna in azione per la prossima meta. Considera ogni sessione come una stagione: impara, iterazioni e mantieni accese le luci del laboratorio.",
+      "paragraph3": "Ti senti inarrestabile? Premi “Nuova partita”, crea il tuo lineup ideale e inonda i social con i migliori deck Minimon citando “P2Enjoy” così che tutta la community sappia chi detta il ritmo."
+    },
+    "languageLabel": "Lingua"
+  },
+  "main": {
+    "title": "Minimon Lab",
+    "endGame": "Termina partita",
+    "generatedOn": "Generato il:",
+    "messages": {
+      "loadError": "Impossibile caricare i dati dell'app. Riprova.",
+      "needTokens": "Hai bisogno di {{cost}} gettoni per generare un Minimon. Saldo attuale: {{balance}}.",
+      "generateSuccess": "Fantastico! Hai generato un nuovo Minimon: {{name}} ({{rarity}})!",
+      "tokensRefunded": "Gettoni rimborsati.",
+      "resellSuccess": "{{name}} rivenduto con successo! Hai guadagnato {{tokens}} gettoni.",
+      "resellFailed": "Errore nella rivendita del Minimon: {{error}}",
+      "endGameFailed": "Impossibile terminare la partita: {{error}}"
+    },
+    "stats": {
+      "tokens": "I tuoi gettoni",
+      "score": "Punteggio Minidek"
+    },
+    "collection": {
+      "title": "La tua collezione",
+      "sortBy": "Ordina per:",
+      "options": {
+        "newest": "Più recente",
+        "oldest": "Più vecchio",
+        "rarityDesc": "Rarità (dalla più alta)",
+        "rarityAsc": "Rarità (dalla più bassa)",
+        "nameAsc": "Nome (A-Z)",
+        "nameDesc": "Nome (Z-A)"
+      },
+      "empty": "Non hai ancora generato alcun Minimon. Inizia creandone uno sopra!",
+      "resell": "Rivendi (+{{tokens}})",
+      "resold": "Rivenduto",
+      "ariaResell": "Rivendi {{name}} per {{tokens}} gettoni"
+    },
+    "loading": "Caricamento dei tuoi Minimon...",
+    "generateButton": "Genera Minimon",
+    "modal": {
+      "resellTitle": "Rivendi Minimon",
+      "resellBody": "Sei sicuro di voler rivendere {{name}}? Riceverai {{tokens}} gettoni. Questa azione è irreversibile.",
+      "resellConfirm": "Rivendi",
+      "endGameTitle": "Termina partita e archivia il Minidek",
+      "endGameBody": "Vuoi terminare la sessione corrente? I tuoi Minimon raccolti, il punteggio Minidek e il saldo gettoni verranno salvati nell’Hall of Fame. La tua progressione verrà poi resettata.",
+      "endGameConfirm": "Archivia ed esci"
+    }
+  },
+  "hallOfFame": {
+    "title": "Hall of Fame",
+    "loading": "Caricamento degli archivi...",
+    "empty": "Nessuna partita archiviata ancora. Avvia una nuova partita e punta in alto!",
+    "detailsBadge": "Punteggio partita:",
+    "archivedOn": "Archiviato il:",
+    "tokens": "Gettoni:",
+    "minimon": "Minimon:",
+    "viewDetails": "Visualizza dettagli",
+    "modalTitle": "Partita archiviata: {{date}}",
+    "modalCollectionTitle": "Collezione di Minimon ({{count}}):",
+    "modalNoMinimon": "Nessun Minimon in questo archivio.",
+    "backLabel": "Torna all'inizio"
+  }
+}
