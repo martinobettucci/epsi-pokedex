@@ -1,0 +1,5 @@
+{
+  "name": "Pokémon Generator Lab",
+  "description": "A client-side React application for generating unique Pokémon, managing token balance, and collecting them using IndexedDB.",
+  "requestFramePermissions": []
+}
