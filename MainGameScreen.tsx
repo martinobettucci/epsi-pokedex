@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { indexedDbService } from './services/indexedDbService';
-import { pokemonApiService } from './services/pokemonApiService';
-import { Pokemon, TokenBalance, AppMessage, PokemonStatus, PokemonRarity } from './types';
+import { minimonApiService } from './services/minimonApiService'; // Updated import
+import { Minimon, TokenBalance, AppMessage, MinimonStatus, MinimonRarity } from './types'; // Updated types
 import Button from './components/Button';
 import Modal from './components/Modal';
 import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut } from 'lucide-react';
-import { getRarityResellValue, getRarityPokedexScoreValue, rarityOrderMap } from './utils/gameHelpers'; // Import from utils
+import { getRarityResellValue, getRarityMinidekScoreValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
 
 const GENERATION_COST = 10;
 
@@ -17,10 +17,10 @@ interface MainGameScreenProps {
 }
 
 const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEndGameAndArchive }) => {
-  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  const [minimons, setMinimons] = useState<Minimon[]>([]); // Renamed state
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isGeneratingPokemon, setIsGeneratingPokemon] = useState<boolean>(false);
+  const [isGeneratingMinimon, setIsGeneratingMinimon] = useState<boolean>(false); // Renamed state
   const [message, setMessage] = useState<AppMessage | null>(null);
   const [sortOrder, setSortOrder] = useState('date-desc');
 
@@ -34,7 +34,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   const [genericModalConfirmButtonVariant, setGenericModalConfirmButtonVariant] = useState<'primary' | 'danger'>('primary');
 
   // Resell specific state (could be merged into generic modal, but kept separate for clarity during refactor)
-  const [pokemonToResellId, setPokemonToResellId] = useState<string | null>(null);
+  const [minimonToResellId, setMinimonToResellId] = useState<string | null>(null); // Renamed state
 
 
   const showMessage = useCallback((type: 'success' | 'error' | 'warning', text: string) => {
@@ -48,8 +48,8 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   const fetchAppData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedPokemons = await indexedDbService.getPokemons();
-      setPokemons(fetchedPokemons);
+      const fetchedMinimons = await indexedDbService.getMinimons(); // Updated call
+      setMinimons(fetchedMinimons); // Updated state
       
       const balance = await indexedDbService.getTokenBalance();
       setTokenBalance(balance.amount);
@@ -66,13 +66,13 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     fetchAppData();
   }, [fetchAppData]);
 
-  const handleGeneratePokemon = async () => {
+  const handleGenerateMinimon = async () => { // Renamed function
     if (tokenBalance < GENERATION_COST) {
-      showMessage('warning', `You need ${GENERATION_COST} tokens to generate a Pokémon. Current balance: ${tokenBalance}.`);
+      showMessage('warning', `You need ${GENERATION_COST} tokens to generate a Minimon. Current balance: ${tokenBalance}.`); // Updated text
       return;
     }
 
-    setIsGeneratingPokemon(true);
+    setIsGeneratingMinimon(true); // Updated state
     let originalTokenBalance = tokenBalance; // Store original balance for rollback
     
     try {
@@ -81,26 +81,28 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       setTokenBalance(newBalanceAfterDeduction);
       await indexedDbService.updateTokenBalance(newBalanceAfterDeduction);
       
-      const newPokemon = await pokemonApiService.generatePokemon();
-      await indexedDbService.addPokemon(newPokemon);
-      setPokemons((prevPokemons) => [newPokemon, ...prevPokemons]);
-      showMessage('success', `Awesome! You generated a new Pokémon: ${newPokemon.name} (${newPokemon.rarity})!`);
+      const newMinimon = await minimonApiService.generateMinimon(); // Updated API call
+      await indexedDbService.addMinimon(newMinimon); // Updated call
+      setMinimons((prevMinimons) => [newMinimon, ...prevMinimons]); // Updated state
+      showMessage('success', `Awesome! You generated a new Minimon: ${newMinimon.name} (${newMinimon.rarity})!`); // Updated text
       
     } catch (error) {
-      console.error("Error generating Pokémon:", error);
+      console.error("Error generating Minimon:", error); // Updated text
       // Rollback token deduction on failure
       const revertedBalance = originalTokenBalance;
       setTokenBalance(revertedBalance);
       await indexedDbService.updateTokenBalance(revertedBalance);
-      showMessage('error', `Failed to generate Pokémon: ${error instanceof Error ? error.message : String(error)}. Tokens refunded.`);
+      // Use the error message directly from the API service, and append token refund info
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      showMessage('error', `${errorMessage} Tokens refunded.`);
     } finally {
-      setIsGeneratingPokemon(false);
+      setIsGeneratingMinimon(false); // Updated state
     }
   };
 
   const closeGenericModal = () => {
     setIsGenericModalOpen(false);
-    setPokemonToResellId(null); // Clear resell specific state as well
+    setMinimonToResellId(null); // Clear resell specific state as well // Updated state
     setGenericModalTitle('');
     setGenericModalContent(null);
     setGenericModalOnConfirm(undefined);
@@ -109,20 +111,22 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     setGenericModalConfirmButtonVariant('primary');
   };
 
-  const handleResellConfirmation = (pokemonId: string, pokemonName: string) => {
-    const pokemonToConfirm = pokemons.find(p => p.id === pokemonId);
-    if (!pokemonToConfirm) {
-      showMessage('error', 'Could not find the Pokémon to resell.');
+  const handleResellConfirmation = (minimonId: string, minimonName: string) => { // Updated parameters
+    const minimonToConfirm = minimons.find(p => p.id === minimonId); // Updated variable
+    if (!minimonToConfirm) {
+      showMessage('error', 'Could not find the Minimon to resell.'); // Updated text
       return;
     }
     
-    const resellValue = getRarityResellValue(pokemonToConfirm.rarity);
+    // Validate rarity for display and function call
+    const currentRarity = isValidMinimonRarity(minimonToConfirm.rarity) ? minimonToConfirm.rarity : MinimonRarity.F;
+    const resellValue = getRarityResellValue(currentRarity);
 
-    setPokemonToResellId(pokemonId);
-    setGenericModalTitle('Resell Pokémon');
+    setMinimonToResellId(minimonId); // Updated state
+    setGenericModalTitle('Resell Minimon'); // Updated text
     setGenericModalContent(
       <p className="text-gray-200">
-        Are you sure you want to resell <span className="font-semibold text-cyan-400">{pokemonName}</span>?
+        Are you sure you want to resell <span className="font-semibold text-cyan-400">{minimonName}</span>?
         You will receive <span className="font-bold text-lime-300">{resellValue} tokens</span> back. This action cannot be undone.
       </p>
     );
@@ -130,25 +134,27 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       (async () => {
         setIsGenericModalConfirmLoading(true);
         try {
-          const pokemonToResell = pokemons.find(p => p.id === pokemonId);
-          if (pokemonToResell) {
-            const updatedPokemon = { ...pokemonToResell, status: PokemonStatus.RESOLD };
-            await indexedDbService.updatePokemon(updatedPokemon);
+          const minimonToResell = minimons.find(p => p.id === minimonId); // Updated variable
+          if (minimonToResell) {
+            const updatedMinimon = { ...minimonToResell, status: MinimonStatus.RESOLD }; // Updated type
+            await indexedDbService.updateMinimon(updatedMinimon); // Updated call
             
-            const currentResellValue = getRarityResellValue(pokemonToResell.rarity);
+            // Validate rarity before getting resell value
+            const currentResellRarity = isValidMinimonRarity(minimonToResell.rarity) ? minimonToResell.rarity : MinimonRarity.F;
+            const currentResellValue = getRarityResellValue(currentResellRarity);
             const newBalance = tokenBalance + currentResellValue;
             await indexedDbService.updateTokenBalance(newBalance);
 
-            setPokemons((prevPokemons) =>
-              prevPokemons.map((p) => (p.id === updatedPokemon.id ? updatedPokemon : p)),
+            setMinimons((prevMinimons) => // Updated state
+              prevMinimons.map((p) => (p.id === updatedMinimon.id ? updatedMinimon : p)),
             );
             setTokenBalance(newBalance);
             
-            showMessage('success', `${pokemonToResell.name} resold successfully! You gained ${currentResellValue} tokens.`);
+            showMessage('success', `${minimonToResell.name} resold successfully! You gained ${currentResellValue} tokens.`); // Updated text
           }
         } catch (error) {
-          console.error("Error reselling Pokémon:", error);
-          showMessage('error', `Failed to resell Pokémon: ${error instanceof Error ? error.message : String(error)}`);
+          console.error("Error reselling Minimon:", error); // Updated text
+          showMessage('error', `Failed to resell Minimon: ${error instanceof Error ? error.message : String(error)}`); // Updated text
         } finally {
           setIsGenericModalConfirmLoading(false);
           closeGenericModal();
@@ -162,12 +168,12 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   };
 
   const handleEndGameConfirmation = () => {
-    setGenericModalTitle('End Game & Archive Pokédex');
+    setGenericModalTitle('End Game & Archive Minidek'); // Updated title
     setGenericModalContent(
       <p className="text-gray-200">
         Are you sure you want to end your current game session?
         <br/><br/>
-        Your collected Pokémon, current Pokédex Score, and token balance will be <span className="font-bold text-lime-300">saved to the Hall of Fame</span>.
+        Your collected Minimon, current Minidek Score, and token balance will be <span className="font-bold text-lime-300">saved to the Hall of Fame</span>. // Updated text
         Your current game progress will then be <span className="font-bold text-red-400">reset</span>.
       </p>
     );
@@ -188,56 +194,68 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     setIsGenericModalOpen(true);
   };
 
-  const getRarityColor = useCallback((rarity: PokemonRarity) => {
-    switch (rarity) {
-      case PokemonRarity.F: return 'bg-gray-800 text-gray-400';
-      case PokemonRarity.E: return 'bg-gray-700 text-gray-300';
-      case PokemonRarity.D: return 'bg-blue-900 text-blue-300';
-      case PokemonRarity.C: return 'bg-green-900 text-green-300';
-      case PokemonRarity.B: return 'bg-purple-900 text-purple-300';
-      case PokemonRarity.A: return 'bg-yellow-900 text-yellow-300';
-      case PokemonRarity.S: return 'bg-orange-900 text-orange-300';
-      case PokemonRarity.S_PLUS: return 'bg-red-900 text-red-300 font-bold';
+  const getRarityColor = useCallback((rarity: MinimonRarity) => { // Updated type
+    // Fallback for styling if rarity is invalid
+    const validRarity = isValidMinimonRarity(rarity) ? rarity : MinimonRarity.F;
+    switch (validRarity) {
+      case MinimonRarity.F: return 'bg-gray-800 text-gray-400';
+      case MinimonRarity.E: return 'bg-gray-700 text-gray-300';
+      case MinimonRarity.D: return 'bg-blue-900 text-blue-300';
+      case MinimonRarity.C: return 'bg-green-900 text-green-300';
+      case MinimonRarity.B: return 'bg-purple-900 text-purple-300';
+      case MinimonRarity.A: return 'bg-yellow-900 text-yellow-300';
+      case MinimonRarity.S: return 'bg-orange-900 text-orange-300';
+      case MinimonRarity.S_PLUS: return 'bg-red-900 text-red-300 font-bold';
       default: return 'bg-gray-900 text-gray-400';
     }
   }, []);
   
-  const pokedexScore = useMemo(() => {
-    return pokemons.reduce((score, pokemon) => {
-      if (pokemon.status === PokemonStatus.OWNED) {
-        return score + getRarityPokedexScoreValue(pokemon.rarity); // Use rarity-based score
+  const minidekScore = useMemo(() => { // Renamed variable
+    return minimons.reduce((score, minimon) => { // Updated variable
+      // Validate rarity before using it for score calculation
+      const minimonRarity = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : MinimonRarity.F;
+      if (minimon.status === MinimonStatus.OWNED) { // Updated type
+        return score + getRarityMinidekScoreValue(minimonRarity); // Updated call
       }
-      if (pokemon.status === PokemonStatus.RESOLD) {
-        return score + 1; // 1 point for each resold Pokémon
+      if (minimon.status === MinimonStatus.RESOLD) { // Updated type
+        return score + 1; // 1 point for each resold Minimon
       }
       return score;
     }, 0);
-  }, [pokemons]);
+  }, [minimons]); // Updated dependency
 
-  const sortedPokemons = useMemo(() => {
-    const pokemonsToSort = [...pokemons];
+  const sortedMinimons = useMemo(() => { // Renamed variable
+    const minimonsToSort = [...minimons]; // Updated variable
     switch (sortOrder) {
       case 'rarity-desc':
-        return pokemonsToSort.sort((a, b) => rarityOrderMap[b.rarity] - rarityOrderMap[a.rarity]);
+        return minimonsToSort.sort((a, b) => {
+          const rarityA = isValidMinimonRarity(a.rarity) ? a.rarity : MinimonRarity.F;
+          const rarityB = isValidMinimonRarity(b.rarity) ? b.rarity : MinimonRarity.F;
+          return rarityOrderMap[rarityB] - rarityOrderMap[rarityA];
+        });
       case 'rarity-asc':
-        return pokemonsToSort.sort((a, b) => rarityOrderMap[a.rarity] - rarityOrderMap[b.rarity]);
+        return minimonsToSort.sort((a, b) => {
+          const rarityA = isValidMinimonRarity(a.rarity) ? a.rarity : MinimonRarity.F;
+          const rarityB = isValidMinimonRarity(b.rarity) ? b.rarity : MinimonRarity.F;
+          return rarityOrderMap[rarityA] - rarityOrderMap[rarityB];
+        });
       case 'name-asc':
-        return pokemonsToSort.sort((a, b) => a.name.localeCompare(b.name));
+        return minimonsToSort.sort((a, b) => a.name.localeCompare(b.name));
       case 'name-desc':
-        return pokemonsToSort.sort((a, b) => b.name.localeCompare(a.name));
+        return minimonsToSort.sort((a, b) => b.name.localeCompare(a.name));
       case 'date-asc':
-        return pokemonsToSort.sort((a, b) => new Date(a.generatedAt).getTime() - new Date(b.generatedAt).getTime());
+        return minimonsToSort.sort((a, b) => new Date(a.generatedAt).getTime() - new Date(b.generatedAt).getTime());
       case 'date-desc':
       default:
-        return pokemonsToSort.sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime());
+        return minimonsToSort.sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime());
     }
-  }, [pokemons, sortOrder]);
+  }, [minimons, sortOrder]); // Updated dependency
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
-          Pokémon Lab
+          Minimon Lab
         </h1>
         <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
           <LogOut className="h-6 w-6 text-indigo-400" />
@@ -261,7 +279,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
         </div>
       )}
 
-      {/* Stats Section: Token Balance & Pokédex Score */}
+      {/* Stats Section: Token Balance & Minidek Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* Token Balance */}
         <div className="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700 flex items-center justify-between">
@@ -274,35 +292,35 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
           </span>
         </div>
         
-        {/* Pokédex Score */}
+        {/* Minidek Score */}
         <div className="bg-indigo-900 p-4 sm:p-6 rounded-xl shadow-lg border border-indigo-700 flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-3">
             <Trophy className="h-7 w-7 text-fuchsia-400 drop-shadow-md" />
-            Pokédex Score:
+            Minidek Score:
           </h2>
           <span className="text-3xl sm:text-4xl font-extrabold text-fuchsia-400 leading-none drop-shadow-md">
-            {pokedexScore}
+            {minidekScore}
           </span>
         </div>
       </div>
 
-      {/* Generate Pokémon Section */}
+      {/* Generate Minimon Section */}
       <div className="bg-gray-900 p-6 sm:p-8 rounded-xl shadow-2xl border border-indigo-700/50 mb-10 text-center">
         <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-indigo-400 drop-shadow-sm">
-          Generate New Pokémon
+          Generate New Minimon
         </h2>
         <p className="text-gray-300 mb-6">
-          Unleash the power of AI to create a unique Pokémon!
+          Unleash the power of AI to create a unique Minimon!
           (Cost: <span className="font-semibold text-red-400">{GENERATION_COST} Tokens</span>)
         </p>
         <Button
-          onClick={handleGeneratePokemon}
+          onClick={handleGenerateMinimon} // Updated call
           variant="primary"
           size="lg"
           className="w-full sm:w-auto flex items-center justify-center gap-2"
-          disabled={isGeneratingPokemon || isLoading || tokenBalance < GENERATION_COST}
+          disabled={isGeneratingMinimon || isLoading || tokenBalance < GENERATION_COST} // Updated state
         >
-          {isGeneratingPokemon ? (
+          {isGeneratingMinimon ? ( // Updated state
             <span className="flex items-center">
               <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
               Generating...
@@ -310,16 +328,16 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
           ) : (
             <>
               <Sparkles className="h-5 w-5" />
-              Generate Pokémon
+              Generate Minimon
             </>
           )}
         </Button>
       </div>
 
-      {/* Pokémon Collection */}
+      {/* Minimon Collection */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 text-center sm:text-left mb-4 sm:mb-0 drop-shadow-md">Your Collection</h2>
-        {pokemons.length > 1 && (
+        {minimons.length > 1 && ( // Updated state
           <div className="flex items-center gap-2 self-center sm:self-auto">
             <label htmlFor="sort-order" className="text-gray-300 font-medium">Sort by:</label>
             <select
@@ -342,47 +360,51 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="animate-spin h-10 w-10 text-indigo-400" />
-          <p className="ml-4 text-lg text-gray-300">Loading your Pokémon...</p>
+          <p className="ml-4 text-lg text-gray-300">Loading your Minimon...</p>
         </div>
-      ) : sortedPokemons.length === 0 ? (
+      ) : sortedMinimons.length === 0 ? ( // Updated variable
         <p className="text-center text-gray-400 text-xl py-12 bg-gray-900 rounded-xl shadow-md border border-gray-800">
-          You haven't generated any Pokémon yet. Start creating above!
+          You haven't generated any Minimon yet. Start creating above!
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedPokemons.map((pokemon) => {
-            const resellValue = getRarityResellValue(pokemon.rarity);
+          {sortedMinimons.map((minimon) => { // Updated variable
+            // Validate rarity for display and function call
+            const displayRarity = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : 'N/A';
+            const validRarityForResell = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : MinimonRarity.F;
+            const resellValue = getRarityResellValue(validRarityForResell);
+            
             return (
-              <div key={pokemon.id} className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 flex flex-col">
+              <div key={minimon.id} className="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 flex flex-col">
                 <div className="flex-grow">
                   <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center p-2">
                     <img
-                      src={`data:image/png;base64,${pokemon.imageBase64}`}
-                      alt={pokemon.name}
+                      src={`data:image/png;base64,${minimon.imageBase64}`}
+                      alt={minimon.name} // Updated alt
                       className="object-contain w-full h-full"
                       loading="lazy"
                     />
-                    {pokemon.status === PokemonStatus.RESOLD && (
+                    {minimon.status === MinimonStatus.RESOLD && ( // Updated type
                       <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center text-red-400 text-lg font-bold drop-shadow-lg">
                         RESOLD
                       </div>
                     )}
                   </div>
                   <h3 className="text-xl font-semibold mb-2 text-gray-100 flex items-center justify-between">
-                    <span>{pokemon.name}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getRarityColor(pokemon.rarity)}`}>
-                      {pokemon.rarity}
+                    <span>{minimon.name}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getRarityColor(validRarityForResell)}`}>
+                      {displayRarity} {/* Display N/A for invalid rarities */}
                     </span>
                   </h3>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center text-sm text-gray-400">
-                  <span>Generated: {new Date(pokemon.generatedAt).toLocaleDateString()}</span>
-                  {pokemon.status === PokemonStatus.OWNED ? (
+                  <span>Generated: {new Date(minimon.generatedAt).toLocaleDateString()}</span>
+                  {minimon.status === MinimonStatus.OWNED ? (
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => handleResellConfirmation(pokemon.id, pokemon.name)}
-                      aria-label={`Resell ${pokemon.name} for ${resellValue} tokens`}
+                      onClick={() => handleResellConfirmation(minimon.id, minimon.name)} // Updated parameters
+                      aria-label={`Resell ${minimon.name} for ${resellValue} tokens`}
                     >
                       <Coins className="h-4 w-4 mr-1 text-lime-300" /> Resell (+{resellValue})
                     </Button>

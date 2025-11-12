@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import Button from './components/Button';
 import Modal from './components/Modal';
 import { Sparkles, Coins, Gem, Trophy, PlayCircle, ArrowRightCircle } from 'lucide-react';
-import { PokemonRarity } from './types'; // Import PokemonRarity for display
-import { getRarityResellValue, getRarityPokedexScoreValue } from './utils/gameHelpers'; // Import rarity helpers
+import { MinimonRarity } from './types'; // Import MinimonRarity for display
+import { getRarityResellValue, getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity helpers
 
 interface WelcomeScreenProps {
   canContinueGame: boolean;
-  hasUnarchivedProgress: boolean; // Indicates if there are pokemons that would be lost on a new game
+  hasUnarchivedProgress: boolean; // Indicates if there are minimons that would be lost on a new game
   onStartNewGame: (archiveCurrent: boolean) => void;
   onContinueGame: () => void;
   onViewHallOfFame: () => void;
@@ -33,16 +33,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   };
 
   // Helper to get all rarity values for display
-  const allRarities = Object.values(PokemonRarity);
+  const allRarities = Object.values(MinimonRarity);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
       <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full p-8 sm:p-10 text-center border border-indigo-700/50">
         <h1 className="text-5xl sm:text-6xl font-extrabold text-cyan-400 mb-6 drop-shadow-lg tracking-wide">
-          Pokémon Lab
+          Minimon Lab
         </h1>
         <p className="text-lg text-gray-300 mb-8 max-w-prose mx-auto">
-          Welcome, Trainer! Unleash your creativity and generate unique Pokémon using cutting-edge AI. Collect them, manage your tokens, and strive for the ultimate Pokédex!
+          Welcome, Trainer! Unleash your creativity and generate unique Minimon using cutting-edge AI. Collect them, manage your tokens, and strive for the ultimate Minidek!
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 text-left">
@@ -52,7 +52,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <Sparkles className="h-6 w-6 text-blue-400" />
               Generation
             </h2>
-            <p className="text-gray-300 mb-2 flex items-center gap-1">Each new Pokémon costs <span className="font-bold text-red-400 flex items-center"><Coins className="h-4 w-4 mr-1 text-red-400"/>10 tokens</span>.</p>
+            <p className="text-gray-300 mb-2 flex items-center gap-1">Each new Minimon costs <span className="font-bold text-red-400 flex items-center"><Coins className="h-4 w-4 mr-1 text-red-400"/>10 tokens</span>.</p>
             <p className="text-sm text-gray-400">Discover unique creatures with varying rarities!</p>
           </div>
 
@@ -62,31 +62,31 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <Coins className="h-6 w-6 text-lime-300" />
               Reselling
             </h2>
-            <p className="text-gray-300 mb-2">Earn tokens back by reselling your Pokémon:</p>
+            <p className="text-gray-300 mb-2">Earn tokens back by reselling your Minimon:</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               {allRarities.map(rarity => (
                 <div key={`resell-${rarity}`} className="flex items-center gap-1 text-gray-200">
-                  <span className="font-semibold">{rarity}</span>: {getRarityResellValue(rarity)} tokens
+                  <span className="font-semibold">{rarity}</span>: {getRarityResellValue(rarity as MinimonRarity)} tokens
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Pokédex Score Card */}
+          {/* Minidek Score Card */}
           <div className="bg-gray-900 p-6 rounded-xl shadow-lg flex flex-col items-center border border-fuchsia-700 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all duration-200">
             <h2 className="text-xl font-bold text-fuchsia-400 mb-3 flex items-center gap-2 drop-shadow-sm tracking-tight">
               <Trophy className="h-6 w-6 text-fuchsia-400" />
-              Pokédex Score
+              Minidek Score
             </h2>
-            <p className="text-gray-300 mb-2">Earn points for OWNED Pokémon based on rarity:</p>
+            <p className="text-gray-300 mb-2">Earn points for OWNED Minimon based on rarity:</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-2">
               {allRarities.map(rarity => (
                 <div key={`score-${rarity}`} className="flex items-center gap-1 text-gray-200">
-                  <span className="font-semibold">{rarity}</span>: {getRarityPokedexScoreValue(rarity)} pts
+                  <span className="font-semibold">{rarity}</span>: {getRarityMinidekScoreValue(rarity as MinimonRarity)} pts
                 </div>
               ))}
             </div>
-            <p className="text-gray-300"><span className="font-bold text-blue-300">1 point</span> for each resold Pokémon.</p>
+            <p className="text-gray-300"><span className="font-bold text-blue-300">1 point</span> for each resold Minimon.</p>
           </div>
         </div>
 
@@ -136,8 +136,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         confirmButtonVariant="primary"
       >
         <p className="text-gray-200">
-          You currently have unarchived progress with collected Pokémon and tokens.
-          Would you like to save your current Pokédex and token balance to the Hall of Fame
+          You currently have unarchived progress with collected Minimon and tokens.
+          Would you like to save your current Minidek and token balance to the Hall of Fame
           before starting a new game?
         </p>
         <p className="text-sm text-gray-400 mt-2">

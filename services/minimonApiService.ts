@@ -1,6 +1,5 @@
-// services/pokemonApiService.ts
+// services/minimonApiService.ts
 
-// Corrected imports to use Minimon types
 import { Minimon, MinimonStatus, MinimonRarity, ApiErrorResponse } from '../types';
 
 const API_BASE_URL = 'https://epsi.journeesdecouverte.fr:22222/v1'; // Changed to HTTPS
@@ -10,7 +9,6 @@ const REQUEST_TIMEOUT = 30000; // 30 seconds timeout for the API request
 /**
  * Service for interacting with the external Minimon generation API.
  */
-// Renamed class to MinimonApiService for consistency
 export class MinimonApiService {
 
   /**
@@ -19,7 +17,6 @@ export class MinimonApiService {
    * @returns A promise that resolves with the generated Minimon object.
    * @throws {Error} if the API call fails or returns an error.
    */
-  // Renamed method to generateMinimon for consistency
   public async generateMinimon(): Promise<Minimon> {
     const url = `${API_BASE_URL}/generate`;
     const controller = new AbortController();
@@ -48,7 +45,6 @@ export class MinimonApiService {
           }
         }));
         console.error('API Error Response:', errorData); // Clarified console log
-        // Updated error message to reference Minimon
         throw new Error(errorData?.error?.message || `Failed to generate Minimon (HTTP ${res.status})`);
       }
 
@@ -59,7 +55,6 @@ export class MinimonApiService {
         throw new Error('Invalid API response format received: missing expected fields.'); // More specific validation error
       }
 
-      // Changed type and variable name from Pokemon to Minimon
       const minimon: Minimon = {
         id: data.metadata.id,
         name: data.metadata.name,
@@ -76,7 +71,6 @@ export class MinimonApiService {
       console.error('Network or API processing error:', error); // Log the raw error object for more detail
       
       if ((error as Error).name === 'AbortError') {
-        // Updated error message to reference Minimon
         throw new Error(`The Minimon generation request timed out after ${REQUEST_TIMEOUT / 1000} seconds. The API might be busy, please try again later.`);
       }
 
@@ -92,5 +86,4 @@ export class MinimonApiService {
   }
 }
 
-// Renamed exported instance to minimonApiService for consistency
 export const minimonApiService = new MinimonApiService();

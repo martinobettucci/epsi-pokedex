@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { indexedDbService } from './services/indexedDbService';
-import { ArchivedGame, PokemonRarity, PokemonStatus } from './types'; // Import PokemonStatus
+import { ArchivedGame, MinimonRarity, MinimonStatus } from './types'; // Import MinimonStatus
 import Button from './components/Button';
 import { ArrowLeft, Trophy, Gem, Coins, Star, Loader2 } from 'lucide-react';
 import Modal from './components/Modal';
-import { rarityOrderMap } from './utils/gameHelpers'; // Import rarityOrderMap
+import { rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Import rarityOrderMap and isValidMinimonRarity
 
 interface HallOfFameProps {
   onBack: () => void;
@@ -36,16 +36,18 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
     fetchArchives();
   }, [fetchArchives]);
 
-  const getRarityColor = useCallback((rarity: PokemonRarity) => {
-    switch (rarity) {
-      case PokemonRarity.F: return 'bg-gray-800 text-gray-400';
-      case PokemonRarity.E: return 'bg-gray-700 text-gray-300';
-      case PokemonRarity.D: return 'bg-blue-900 text-blue-300';
-      case PokemonRarity.C: return 'bg-green-900 text-green-300';
-      case PokemonRarity.B: return 'bg-purple-900 text-purple-300';
-      case PokemonRarity.A: return 'bg-yellow-900 text-yellow-300';
-      case PokemonRarity.S: return 'bg-orange-900 text-orange-300';
-      case PokemonRarity.S_PLUS: return 'bg-red-900 text-red-300 font-bold';
+  const getRarityColor = useCallback((rarity: MinimonRarity) => { // Updated type
+    // Fallback for styling if rarity is invalid
+    const validRarity = isValidMinimonRarity(rarity) ? rarity : MinimonRarity.F;
+    switch (validRarity) {
+      case MinimonRarity.F: return 'bg-gray-800 text-gray-400';
+      case MinimonRarity.E: return 'bg-gray-700 text-gray-300';
+      case MinimonRarity.D: return 'bg-blue-900 text-blue-300';
+      case MinimonRarity.C: return 'bg-green-900 text-green-300';
+      case MinimonRarity.B: return 'bg-purple-900 text-purple-300';
+      case MinimonRarity.A: return 'bg-yellow-900 text-yellow-300';
+      case MinimonRarity.S: return 'bg-orange-900 text-orange-300';
+      case MinimonRarity.S_PLUS: return 'bg-red-900 text-red-300 font-bold';
       default: return 'bg-gray-900 text-gray-400';
     }
   }, []);
@@ -60,12 +62,15 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
     setSelectedArchive(null);
   };
 
-  const sortedPokemonsInArchive = useMemo(() => {
+  const sortedMinimonsInArchive = useMemo(() => { // Updated variable
     if (!selectedArchive) return [];
-    const pokemonsToSort = [...selectedArchive.pokemons];
+    const minimonsToSort = [...selectedArchive.minimons]; // Updated variable
     // Sort by rarity (descending) then by name (ascending)
-    return pokemonsToSort.sort((a, b) => {
-      const rarityDiff = rarityOrderMap[b.rarity] - rarityOrderMap[a.rarity];
+    return minimonsToSort.sort((a, b) => {
+      // Validate rarity before using it for sorting
+      const rarityA = isValidMinimonRarity(a.rarity) ? a.rarity : MinimonRarity.F;
+      const rarityB = isValidMinimonRarity(b.rarity) ? b.rarity : MinimonRarity.F;
+      const rarityDiff = rarityOrderMap[rarityB] - rarityOrderMap[rarityA];
       if (rarityDiff !== 0) return rarityDiff;
       return a.name.localeCompare(b.name);
     });
@@ -116,7 +121,7 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                     <Gem className="h-4 w-4 text-lime-300" /> Tokens: {archive.tokenBalance}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Coins className="h-4 w-4 text-cyan-300" /> Pokémon: {archive.pokemons.length}
+                    <Coins className="h-4 w-4 text-cyan-300" /> Minimon: {archive.minimons.length}
                   </span>
                 </div>
               </div>
@@ -146,20 +151,20 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                 <Gem className="h-5 w-5 text-lime-300" /> Tokens: <span className="text-lime-300">{selectedArchive.tokenBalance}</span>
               </span>
             </div>
-            <h4 className="text-lg font-semibold text-gray-100 mt-6 mb-3">Pokémon Collection ({selectedArchive.pokemons.length}):</h4>
-            {selectedArchive.pokemons.length === 0 ? (
-              <p className="text-gray-400">No Pokémon in this archive.</p>
+            <h4 className="text-lg font-semibold text-gray-100 mt-6 mb-3">Minimon Collection ({selectedArchive.minimons.length}):</h4>
+            {selectedArchive.minimons.length === 0 ? (
+              <p className="text-gray-400">No Minimon in this archive.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                {sortedPokemonsInArchive.map((pokemon) => (
-                  <div key={pokemon.id} className="flex items-center p-3 border border-gray-700 rounded-lg bg-gray-900 shadow-sm hover:shadow-md hover:shadow-indigo-500/10 transition-shadow duration-200">
+                {sortedMinimonsInArchive.map((minimon) => ( // Updated variable
+                  <div key={minimon.id} className="flex items-center p-3 border border-gray-700 rounded-lg bg-gray-900 shadow-sm hover:shadow-md hover:shadow-indigo-500/10 transition-shadow duration-200">
                     <div className="relative w-16 h-16 rounded-md mr-4 bg-gray-800 flex items-center justify-center p-1 overflow-hidden">
                       <img
-                        src={`data:image/png;base64,${pokemon.imageBase64}`}
-                        alt={pokemon.name}
+                        src={`data:image/png;base64,${minimon.imageBase64}`}
+                        alt={minimon.name} // Updated alt
                         className="object-contain w-full h-full"
                       />
-                      {pokemon.status === PokemonStatus.RESOLD && ( // Corrected condition
+                      {minimon.status === MinimonStatus.RESOLD && ( // Corrected condition
                         <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center text-red-400 text-xs font-bold drop-shadow-lg">
                           RESOLD
                         </div>
@@ -167,11 +172,12 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                     </div>
                     <div className="flex-grow">
                       <p className="font-semibold text-gray-100">
-                        {pokemon.name}
-                        {pokemon.status === PokemonStatus.RESOLD && <span className="italic text-gray-500 ml-2">(Sold)</span>}
+                        {minimon.name}
+                        {minimon.status === MinimonStatus.RESOLD && <span className="italic text-gray-500 ml-2">(Sold)</span>}
                       </p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getRarityColor(pokemon.rarity)}`}>
-                        {pokemon.rarity}
+                      {/* Validate rarity for display and styling */}
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${getRarityColor(minimon.rarity)}`}>
+                        {isValidMinimonRarity(minimon.rarity) ? minimon.rarity : 'N/A'}
                       </span>
                     </div>
                   </div>

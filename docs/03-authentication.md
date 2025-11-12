@@ -53,7 +53,7 @@ Chaque requête adressée à l’API doit inclure l’en-tête HTTP `Authorizati
 ## Exemple d’appel avec authentification
 
 ```js
-async function generatePokemon() {
+async function generateMinimon() {
   const res = await fetch("http://epsi.journeesdecouverte.fr:22222/v1/generate", {
     method: "GET",
     headers: {

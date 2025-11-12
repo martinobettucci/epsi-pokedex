@@ -1,6 +1,6 @@
-# API de génération d’image Pokémon
+# API de génération d’image Minimon
 
-Cette spécification décrit un point d’entrée HTTP public permettant de générer un Pokémon de manière entièrement prédéterminée. L’API ne reçoit aucun paramètre et retourne une image encodée en **base64**, accompagnée de trois propriétés de métadonnées : un identifiant unique, un nom et une rareté.
+Cette spécification décrit un point d’entrée HTTP public permettant de générer un Minimon de manière entièrement prédéterminée. L’API ne reçoit aucun paramètre et retourne une image encodée en **base64**, accompagnée de trois propriétés de métadonnées : un identifiant unique, un nom et une rareté.
 
 ---
 
@@ -10,7 +10,7 @@ Cette spécification décrit un point d’entrée HTTP public permettant de gén
 * **URL complète** : `https://epsi.journeesdecouverte.fr:22222/v1/generate`
 * **Auth** : optionnelle selon le déploiement (ex. `Authorization: Bearer <token>`)
 
-Aucune donnée n’est transmise en entrée. Chaque appel produit un Pokémon aléatoire selon les modèles internes du service.
+Aucune donnée n’est transmise en entrée. Chaque appel produit un Minimon aléatoire selon les modèles internes du service.
 
 ---
 
@@ -23,8 +23,8 @@ Aucune donnée n’est transmise en entrée. Chaque appel produit un Pokémon al
 | ----------------- | ----------------- | --------------------------------------------------------------------------- |
 | `imageBase64`     | string            | Image encodée en base64, sans préfixe de data URL. Format par défaut : PNG. |
 | `metadata`        | object            | Métadonnées associées à la génération.                                      |
-| `metadata.id`     | string            | Identifiant unique du Pokémon généré.                                       |
-| `metadata.name`   | string            | Nom attribué automatiquement au Pokémon.                                    |
+| `metadata.id`     | string            | Identifiant unique du Minimon généré.                                       |
+| `metadata.name`   | string            | Nom attribué automatiquement au Minimon.                                    |
 | `metadata.rarity` | string (enum)     | Niveau de rareté parmi `F`, `E`, `D`, `C`, `B`, `A`, `S`, `S+`.             |
 | `generatedAt`     | string (ISO 8601) | Horodatage de génération côté serveur.                                      |
 
@@ -54,7 +54,7 @@ Aucune donnée n’est transmise en entrée. Chaque appel produit un Pokémon al
 {
   "error": {
     "code": "GENERATION_FAILED",
-    "message": "Une erreur est survenue lors de la génération du Pokémon.",
+    "message": "Une erreur est survenue lors de la génération du Minimon.",
     "timestamp": "2025-11-12T09:15:27Z"
   }
 }
@@ -65,7 +65,7 @@ Aucune donnée n’est transmise en entrée. Chaque appel produit un Pokémon al
 ## Exemple d’exécution en JavaScript
 
 ```js
-async function generatePokemon() {
+async function generateMinimon() {
   const res = await fetch("https://epsi.journeesdecouverte.fr:22222/v1/generate", {
     method: "GET",
     headers: {
@@ -92,7 +92,7 @@ async function generatePokemon() {
 }
 
 // Exemple d’usage
-generatePokemon().then(result => {
+generateMinimon().then(result => {
   console.log("ID:", result.id);
   console.log("Nom:", result.name);
   console.log("Rareté:", result.rarity);
@@ -107,7 +107,7 @@ generatePokemon().then(result => {
 
 ## Notes complémentaires
 
-* Le service génère un Pokémon entièrement aléatoire sans paramètre d’entrée.
+* Le service génère un Minimon entièrement aléatoire sans paramètre d’entrée.
 * Le champ `rarity` est borné à la liste `F` → `S+`.
 * Les images sont encodées en base64, format PNG par défaut.
 * Le service peut être soumis à des limites de fréquence pour éviter la surcharge.

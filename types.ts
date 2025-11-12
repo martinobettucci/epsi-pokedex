@@ -1,9 +1,9 @@
 // types.ts
 
 /**
- * Enum for Pokémon rarity levels.
+ * Enum for Minimon rarity levels.
  */
-export enum PokemonRarity {
+export enum MinimonRarity {
   F = 'F',
   E = 'E',
   D = 'D',
@@ -15,23 +15,23 @@ export enum PokemonRarity {
 }
 
 /**
- * Enum for Pokémon status (owned or resold).
+ * Enum for Minimon status (owned or resold).
  */
-export enum PokemonStatus {
+export enum MinimonStatus {
   OWNED = 'OWNED',
   RESOLD = 'RESOLD',
 }
 
 /**
- * Interface for a generated Pokémon item.
+ * Interface for a generated Minimon item.
  */
-export interface Pokemon {
+export interface Minimon {
   id: string; // Unique ID from the API
   name: string;
-  rarity: PokemonRarity;
+  rarity: MinimonRarity;
   imageBase64: string; // Base64 encoded image data (without prefix)
   generatedAt: string; // ISO 8601 string from API
-  status: PokemonStatus; // OWNED or RESOLD
+  status: MinimonStatus; // OWNED or RESOLD
 }
 
 /**
@@ -43,13 +43,13 @@ export interface TokenBalance {
 }
 
 /**
- * Interface for an archived game, storing historical Pokédex data.
+ * Interface for an archived game, storing historical Minidek data.
  */
 export interface ArchivedGame {
   id: string; // Unique ID for the archived game (e.g., timestamp)
   score: number;
   tokenBalance: number;
-  pokemons: Pokemon[]; // Snapshot of pokemons at the time of archiving
+  minimons: Minimon[]; // Snapshot of minimons at the time of archiving
   archiveDate: string; // ISO 8601 string when the game was archived
 }
 
@@ -66,7 +66,7 @@ export interface AppState {
  * Enum for IndexedDB object store names.
  */
 export enum StoreNames {
-  Pokemons = 'pokemons',
+  Minimons = 'minimons',
   Settings = 'settings', // For storing global settings like token balance
   Archives = 'archives', // For storing historical game archives (Hall of Fame)
   AppState = 'appState', // For storing global app state like if a game is active
@@ -75,7 +75,7 @@ export enum StoreNames {
 /**
  * Database name for IndexedDB.
  */
-export const DB_NAME = 'PokemonGeneratorDB';
+export const DB_NAME = 'MinimonGeneratorDB';
 
 /**
  * Database version for IndexedDB. Increment this number when making schema changes.
@@ -87,6 +87,7 @@ export const DB_VERSION = 3; // Incrementing version from 2 to 3 for new stores
  */
 export interface AppMessage {
   type: 'success' | 'error' | 'warning';
+  // Added 'text' property to store the message content.
   text: string;
 }
 

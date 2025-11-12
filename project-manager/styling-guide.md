@@ -1,6 +1,6 @@
 # Styling Guide
 
-This guide establishes conventions for using Tailwind CSS and Lucide React to maintain a consistent and aesthetic design across the Pokémon Generator application.
+This guide establishes conventions for using Tailwind CSS and Lucide React to maintain a consistent and aesthetic design across the Minimon Generator application.
 
 ## Tailwind CSS Conventions
 
@@ -10,7 +10,7 @@ This guide establishes conventions for using Tailwind CSS and Lucide React to ma
     *   Headings (`h1`, `h2`, `h3`): Use a combination of `font-extrabold` or `font-bold` with `text-indigo-800` or `text-gray-900`. Adjust sizes (`text-4xl`, `text-3xl`, `text-2xl`) for hierarchy.
 *   **Containers & Cards**:
     *   Use `bg-white p-6 rounded-xl shadow-lg` for main content blocks and card components.
-    *   Add `hover:shadow-xl transition-shadow duration-200` for interactive elements like Pokémon cards.
+    *   Add `hover:shadow-xl transition-shadow duration-200` for interactive elements like Minimon cards.
 *   **Spacing**:
     *   Use Tailwind's default spacing scale (e.g., `p-4`, `m-6`, `gap-3`).
     *   Aim for consistent vertical rhythm.
@@ -31,7 +31,7 @@ This guide establishes conventions for using Tailwind CSS and Lucide React to ma
 *   **Import**: Always import icons directly from `lucide-react`.
 *   **Usage**:
     *   Use icons to enhance button clarity, navigation elements, and status indicators.
-    *   **Pokémon Generation**: `Sparkles` or `MagicWand`.
+    *   **Minimon Generation**: `Sparkles` or `MagicWand`.
     *   **Resell**: `Coins` or `RefreshCw`.
     *   **Edit**: `Edit`.
     *   **Delete/Close**: `Trash2`, `X`, `XCircle`.

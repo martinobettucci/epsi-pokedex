@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { indexedDbService } from './services/indexedDbService';
-import { AppState as AppStateType, PokemonStatus, PokemonRarity } from './types'; // Import necessary types
+import { AppState as AppStateType, MinimonStatus, MinimonRarity, Minimon } from './types'; // Import necessary types
 import WelcomeScreen from './WelcomeScreen';
 import MainGameScreen from './MainGameScreen';
 import HallOfFame from './HallOfFame';
 import { Loader2 } from 'lucide-react';
 import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
-import { getRarityPokedexScoreValue } from './utils/gameHelpers'; // Import rarity score helper
+import { getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity score helper
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 
@@ -19,13 +19,13 @@ const App: React.FC = () => {
   const [hasUnarchivedProgress, setHasUnarchivedProgress] = useState<boolean>(false);
 
   // Function to calculate score for archiving
-  const calculatePokedexScore = useCallback((pokemons: Parameters<typeof indexedDbService.archiveCurrentGame>[2]) => {
-    return pokemons.reduce((score, pokemon) => {
-      if (pokemon.status === PokemonStatus.OWNED) {
-        return score + getRarityPokedexScoreValue(pokemon.rarity); // Use rarity-based score
+  const calculateMinidekScore = useCallback((minimons: Minimon[]) => {
+    return minimons.reduce((score, minimon) => {
+      if (minimon.status === MinimonStatus.OWNED) {
+        return score + getRarityMinidekScoreValue(minimon.rarity); // Use rarity-based score
       }
-      if (pokemon.status === PokemonStatus.RESOLD) {
-        return score + 1; // 1 point for each resold Pokémon
+      if (minimon.status === MinimonStatus.RESOLD) {
+        return score + 1; // 1 point for each resold Minimon
       }
       return score;
     }, 0);
@@ -36,10 +36,10 @@ const App: React.FC = () => {
     setIsLoadingApp(true);
     try {
       const appState = await indexedDbService.getAppState();
-      const pokemons = await indexedDbService.getPokemons();
+      const minimons = await indexedDbService.getMinimons();
 
-      const newCanContinueGame = appState.hasActiveGame && pokemons.length > 0;
-      const newHasUnarchivedProgress = pokemons.length > 0;
+      const newCanContinueGame = appState.hasActiveGame && minimons.length > 0;
+      const newHasUnarchivedProgress = minimons.length > 0;
 
       setCanContinueGame(newCanContinueGame);
       setHasUnarchivedProgress(newHasUnarchivedProgress);
@@ -55,7 +55,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculatePokedexScore]);
+  }, [calculateMinidekScore]);
 
   useEffect(() => {
     initializeApp();
@@ -65,15 +65,15 @@ const App: React.FC = () => {
     setIsLoadingApp(true);
     try {
       if (archiveCurrent) {
-        const pokemonsToArchive = await indexedDbService.getPokemons();
+        const minimonsToArchive = await indexedDbService.getMinimons();
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculatePokedexScore(pokemonsToArchive); // Calculate score using the helper
+        const score = calculateMinidekScore(minimonsToArchive); // Calculate score using the helper
 
-        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, pokemonsToArchive);
+        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
       }
-      await indexedDbService.clearCurrentGameData(); // Clears pokemons, resets tokens, sets hasActiveGame to true
+      await indexedDbService.clearCurrentGameData(); // Clears minimons, resets tokens, sets hasActiveGame to true
       // The hasActiveGame is set to true by clearCurrentGameData, no need to explicitly save again
-      setCanContinueGame(false); // No pokemon yet, so can't continue
+      setCanContinueGame(false); // No minimon yet, so can't continue
       setHasUnarchivedProgress(false); // Progress cleared
       setCurrentScreen('mainGame');
     } catch (error) {
@@ -82,7 +82,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculatePokedexScore]);
+  }, [calculateMinidekScore]);
 
   const handleContinueGame = useCallback(async () => {
     setIsLoadingApp(true);
@@ -101,12 +101,12 @@ const App: React.FC = () => {
   const handleEndGameAndArchive = useCallback(async () => {
     setIsLoadingApp(true);
     try {
-      const pokemonsToArchive = await indexedDbService.getPokemons();
-      if (pokemonsToArchive.length > 0) {
+      const minimonsToArchive = await indexedDbService.getMinimons();
+      if (minimonsToArchive.length > 0) {
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculatePokedexScore(pokemonsToArchive);
+        const score = calculateMinidekScore(minimonsToArchive);
 
-        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, pokemonsToArchive);
+        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
       }
       
       // Clear current game data and deactivate active game state
@@ -121,7 +121,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculatePokedexScore]);
+  }, [calculateMinidekScore]);
 
   const handleViewHallOfFame = useCallback(() => {
     setCurrentScreen('hallOfFame');
@@ -131,10 +131,10 @@ const App: React.FC = () => {
   const handleBackToWelcomeFromHallOfFame = useCallback(async () => {
     // Re-evaluate if there's an active game context from DB
     const appState = await indexedDbService.getAppState();
-    const pokemons = await indexedDbService.getPokemons();
-    const newCanContinueGame = appState.hasActiveGame && pokemons.length > 0;
+    const minimons = await indexedDbService.getMinimons();
+    const newCanContinueGame = appState.hasActiveGame && minimons.length > 0;
     setCanContinueGame(newCanContinueGame);
-    setHasUnarchivedProgress(pokemons.length > 0);
+    setHasUnarchivedProgress(minimons.length > 0);
     setCurrentScreen('welcome');
   }, []);
 
@@ -142,8 +142,8 @@ const App: React.FC = () => {
   if (isLoadingApp) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 to-indigo-950 text-gray-100">
-        <Loader2 className="animate-spin h-12 w-12 text-indigo-400 mb-4" aria-label="Loading Pokémon Lab" />
-        <p className="ml-4 text-xl text-gray-300 drop-shadow-lg">Loading Pokémon Lab...</p>
+        <Loader2 className="animate-spin h-12 w-12 text-indigo-400 mb-4" aria-label="Loading Minimon Lab" />
+        <p className="ml-4 text-xl text-gray-300 drop-shadow-lg">Loading Minimon Lab...</p>
       </div>
     );
   }

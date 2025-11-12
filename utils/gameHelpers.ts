@@ -1,57 +1,66 @@
 // utils/gameHelpers.ts
 
-import { PokemonRarity } from '../types';
+import { MinimonRarity } from '../types';
 
 /**
- * Returns the resell value for a given Pokémon rarity.
- * @param rarity The rarity of the Pokémon.
+ * Returns the resell value for a given Minimon rarity.
+ * @param rarity The rarity of the Minimon.
  * @returns The number of tokens received when reselling.
  */
-export const getRarityResellValue = (rarity: PokemonRarity): number => {
+export const getRarityResellValue = (rarity: MinimonRarity): number => {
   switch (rarity) {
-    case PokemonRarity.S_PLUS: return 25;
-    case PokemonRarity.S: return 15;
-    case PokemonRarity.A: return 10;
-    case PokemonRarity.B: return 5;
-    case PokemonRarity.C: return 4;
-    case PokemonRarity.D: return 3;
-    case PokemonRarity.E: return 2;
-    case PokemonRarity.F: return 1;
+    case MinimonRarity.S_PLUS: return 25;
+    case MinimonRarity.S: return 15;
+    case MinimonRarity.A: return 10;
+    case MinimonRarity.B: return 5;
+    case MinimonRarity.C: return 4;
+    case MinimonRarity.D: return 3;
+    case MinimonRarity.E: return 2;
+    case MinimonRarity.F: return 1;
     default: return 1;
   }
 };
 
 /**
- * Returns the Pokédex score value for an OWNED Pokémon based on its rarity.
- * Resold Pokémon always give 1 point.
- * @param rarity The rarity of the Pokémon.
- * @returns The number of points added to the Pokédex score.
+ * Returns the Minidek score value for an OWNED Minimon based on its rarity.
+ * Resold Minimon always give 1 point.
+ * @param rarity The rarity of the Minimon.
+ * @returns The number of points added to the Minidek score.
  */
-export const getRarityPokedexScoreValue = (rarity: PokemonRarity): number => {
+export const getRarityMinidekScoreValue = (rarity: MinimonRarity): number => {
   switch (rarity) {
-    case PokemonRarity.S_PLUS: return 80;
-    case PokemonRarity.S: return 50;
-    case PokemonRarity.A: return 30;
-    case PokemonRarity.B: return 20;
-    case PokemonRarity.C: return 15;
-    case PokemonRarity.D: return 10;
-    case PokemonRarity.E: return 7;
-    case PokemonRarity.F: return 5;
+    case MinimonRarity.S_PLUS: return 80;
+    case MinimonRarity.S: return 50;
+    case MinimonRarity.A: return 30;
+    case MinimonRarity.B: return 20;
+    case MinimonRarity.C: return 15;
+    case MinimonRarity.D: return 10;
+    case MinimonRarity.E: return 7;
+    case MinimonRarity.F: return 5;
     default: return 5;
   }
 };
 
 /**
- * A map defining the order of Pokémon rarities for sorting purposes.
+ * A map defining the order of Minimon rarities for sorting purposes.
  * Higher numbers indicate higher rarity.
  */
-export const rarityOrderMap: Record<PokemonRarity, number> = {
-  [PokemonRarity.F]: 0,
-  [PokemonRarity.E]: 1,
-  [PokemonRarity.D]: 2,
-  [PokemonRarity.C]: 3,
-  [PokemonRarity.B]: 4,
-  [PokemonRarity.A]: 5,
-  [PokemonRarity.S]: 6,
-  [PokemonRarity.S_PLUS]: 7,
+export const rarityOrderMap: Record<MinimonRarity, number> = {
+  [MinimonRarity.F]: 0,
+  [MinimonRarity.E]: 1,
+  [MinimonRarity.D]: 2,
+  [MinimonRarity.C]: 3,
+  [MinimonRarity.B]: 4,
+  [MinimonRarity.A]: 5,
+  [MinimonRarity.S]: 6,
+  [MinimonRarity.S_PLUS]: 7,
+};
+
+/**
+ * Checks if a given string is a valid MinimonRarity enum member.
+ * @param rarityString The string to validate.
+ * @returns True if the string is a valid MinimonRarity, false otherwise.
+ */
+export const isValidMinimonRarity = (rarityString: string): rarityString is MinimonRarity => {
+  return Object.values(MinimonRarity).includes(rarityString as MinimonRarity);
 };

@@ -1,6 +1,6 @@
 // services/indexedDbService.ts
 
-import { Pokemon, TokenBalance, DB_NAME, DB_VERSION, StoreNames, PokemonStatus, ArchivedGame, AppState } from '../types';
+import { Minimon, TokenBalance, DB_NAME, DB_VERSION, StoreNames, MinimonStatus, ArchivedGame, AppState } from '../types';
 
 /**
  * A service for interacting with IndexedDB.
@@ -33,8 +33,8 @@ export class IndexedDbService {
           // }
 
           // Ensure existing stores are present
-          if (!db.objectStoreNames.contains(StoreNames.Pokemons)) {
-            db.createObjectStore(StoreNames.Pokemons, { keyPath: 'id' });
+          if (!db.objectStoreNames.contains(StoreNames.Minimons)) {
+            db.createObjectStore(StoreNames.Minimons, { keyPath: 'id' });
           }
           if (!db.objectStoreNames.contains(StoreNames.Settings)) {
             db.createObjectStore(StoreNames.Settings, { keyPath: 'id' });
@@ -106,19 +106,19 @@ export class IndexedDbService {
     });
   }
 
-  // --- Pokémon Operations ---
+  // --- Minimon Operations ---
 
   /**
-   * Adds a new Pokémon to the 'pokemons' object store.
-   * @param pokemon The Pokémon object to add.
-   * @returns A promise that resolves with the added Pokémon.
+   * Adds a new Minimon to the 'minimons' object store.
+   * @param minimon The Minimon object to add.
+   * @returns A promise that resolves with the added Minimon.
    */
-  public async addPokemon(pokemon: Pokemon): Promise<Pokemon> {
-    return this.withTransaction<Pokemon>(StoreNames.Pokemons, 'readwrite', (store) => {
+  public async addMinimon(minimon: Minimon): Promise<Minimon> {
+    return this.withTransaction<Minimon>(StoreNames.Minimons, 'readwrite', (store) => {
       return new Promise((resolve, reject) => {
-        const request = store.add(pokemon);
+        const request = store.add(minimon);
         request.onsuccess = () => {
-          resolve(pokemon);
+          resolve(minimon);
         };
         request.onerror = (event: Event) => {
           reject((event.target as IDBRequest).error);
@@ -128,15 +128,15 @@ export class IndexedDbService {
   }
 
   /**
-   * Retrieves all Pokémon from the 'pokemons' object store.
-   * @returns A promise that resolves with an array of Pokemon objects.
+   * Retrieves all Minimon from the 'minimons' object store.
+   * @returns A promise that resolves with an array of Minimon objects.
    */
-  public async getPokemons(): Promise<Pokemon[]> {
-    return this.withTransaction<Pokemon[]>(StoreNames.Pokemons, 'readonly', (store) => {
+  public async getMinimons(): Promise<Minimon[]> {
+    return this.withTransaction<Minimon[]>(StoreNames.Minimons, 'readonly', (store) => {
       return new Promise((resolve, reject) => {
         const request = store.getAll();
         request.onsuccess = (event: Event) => {
-          resolve((event.target as IDBRequest).result as Pokemon[]);
+          resolve((event.target as IDBRequest).result as Minimon[]);
         };
         request.onerror = (event: Event) => {
           reject((event.target as IDBRequest).error);
@@ -146,16 +146,16 @@ export class IndexedDbService {
   }
 
   /**
-   * Updates an existing Pokémon in the 'pokemons' object store.
-   * @param pokemon The complete Pokémon object with the ID of the Pokémon to update.
-   * @returns A promise that resolves with the updated Pokémon object.
+   * Updates an existing Minimon in the 'minimons' object store.
+   * @param minimon The complete Minimon object with the ID of the Minimon to update.
+   * @returns A promise that resolves with the updated Minimon object.
    */
-  public async updatePokemon(pokemon: Pokemon): Promise<Pokemon> {
-    return this.withTransaction<Pokemon>(StoreNames.Pokemons, 'readwrite', (store) => {
+  public async updateMinimon(minimon: Minimon): Promise<Minimon> {
+    return this.withTransaction<Minimon>(StoreNames.Minimons, 'readwrite', (store) => {
       return new Promise((resolve, reject) => {
-        const request = store.put(pokemon);
+        const request = store.put(minimon);
         request.onsuccess = () => {
-          resolve(pokemon);
+          resolve(minimon);
         };
         request.onerror = (event: Event) => {
           reject((event.target as IDBRequest).error);
@@ -220,17 +220,17 @@ export class IndexedDbService {
    * Archives the current game state into the 'archives' object store.
    * @param score The final score of the game being archived.
    * @param tokenBalance The final token balance of the game being archived.
-   * @param pokemons The collection of Pokémon at the time of archiving.
+   * @param minimons The collection of Minimon at the time of archiving.
    * @returns A promise that resolves with the archived game object.
    */
-  public async archiveCurrentGame(score: number, tokenBalance: number, pokemons: Pokemon[]): Promise<ArchivedGame> {
+  public async archiveCurrentGame(score: number, tokenBalance: number, minimons: Minimon[]): Promise<ArchivedGame> {
     return this.withTransaction<ArchivedGame>(StoreNames.Archives, 'readwrite', (store) => {
       return new Promise((resolve, reject) => {
         const archivedGame: ArchivedGame = {
           id: `archive-${Date.now()}`, // Unique ID for the archive
           score,
           tokenBalance,
-          pokemons,
+          minimons,
           archiveDate: new Date().toISOString(),
         };
         const request = store.add(archivedGame);
@@ -263,20 +263,20 @@ export class IndexedDbService {
   }
 
   /**
-   * Clears all current game data (pokemons and resets token balance),
+   * Clears all current game data (minimons and resets token balance),
    * and sets the app state to indicate a new active game.
    * This is used when explicitly starting a new game.
    * @returns A promise that resolves when the data is cleared.
    */
   public async clearCurrentGameData(): Promise<void> {
-    return this.withTransaction<void>([StoreNames.Pokemons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
-      const pokemonStore = transaction.objectStore(StoreNames.Pokemons);
+    return this.withTransaction<void>([StoreNames.Minimons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
+      const minimonStore = transaction.objectStore(StoreNames.Minimons);
       const settingsStore = transaction.objectStore(StoreNames.Settings);
       const appStateStore = transaction.objectStore(StoreNames.AppState);
 
-      // Clear all pokemons
+      // Clear all minimons
       await new Promise<void>((resolve, reject) => {
-        const clearRequest = pokemonStore.clear();
+        const clearRequest = minimonStore.clear();
         clearRequest.onsuccess = () => resolve();
         clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
       });
@@ -300,19 +300,19 @@ export class IndexedDbService {
   }
 
   /**
-   * Resets current game data (pokemons and token balance) and deactivates the game state.
+   * Resets current game data (minimons and token balance) and deactivates the game state.
    * This is used after archiving a game or when explicitly exiting a game without continuing.
    * @returns A promise that resolves when the data is cleared and state is deactivated.
    */
   public async resetGameAfterArchive(): Promise<void> {
-    return this.withTransaction<void>([StoreNames.Pokemons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
-      const pokemonStore = transaction.objectStore(StoreNames.Pokemons);
+    return this.withTransaction<void>([StoreNames.Minimons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
+      const minimonStore = transaction.objectStore(StoreNames.Minimons);
       const settingsStore = transaction.objectStore(StoreNames.Settings);
       const appStateStore = transaction.objectStore(StoreNames.AppState);
 
-      // Clear all pokemons
+      // Clear all minimons
       await new Promise<void>((resolve, reject) => {
-        const clearRequest = pokemonStore.clear();
+        const clearRequest = minimonStore.clear();
         clearRequest.onsuccess = () => resolve();
         clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
       });
