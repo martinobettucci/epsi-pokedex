@@ -16,6 +16,11 @@ the UI needs to expose.
 - Surface undocumented gaps or inconsistencies you discover while implementing features.
 - Align component naming, user-facing labels, and validation messages with terminology used in the docs.
 - Add follow-up documentation updates whenever UI changes require API documentation adjustments.
-- **Maintain `project-manager/tasks.md` as the central project log: record pending, upcoming, and completed tasks; update the status on every change; and note the next steps in your development workflow. This file must be updated with every change, marking tasks as `[x]` (done) or `[ ]` (pending) within dedicated 'Done', 'In Progress', and 'Planned' sections.**
+- **Maintain `project-manager/tasks.md` as the central project log.**
+    - **Upon a user request, always plan the task and add it to `project-manager/tasks.md` as `[ ] Pending` (if not already there).**
+    - **Present the detailed specification/plan to the user.**
+    - **Wait for user confirmation (e.g., "go for it", "proceed") before starting implementation.**
+    - **After successful implementation and internal verification of the features, mark the relevant tasks in `project-manager/tasks.md` as `[x] Done`.**
+    - **Do not mark a task as `[x] Done` unless it has been fully implemented and verified against the specification.**
 - Read `project-manager/general-objectives.md` before planning work to keep feature decisions aligned with the product goals.
 - Follow the conventions in `project-manager/styling-guide.md` so Tailwind and Lucide usage stays consistent across the UI.
