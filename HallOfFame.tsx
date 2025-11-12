@@ -7,11 +7,54 @@ import Button from './components/Button';
 import { ArrowLeft, Trophy, Gem, Coins, Star, Loader2 } from 'lucide-react';
 import Modal from './components/Modal';
 import { rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Import rarityOrderMap and isValidMinimonRarity
-import { useTranslation } from 'react-i18next';
+import { certifyScore } from './services/certifyScoreService';
+import { useTranslation } from './i18n';
 
 interface HallOfFameProps {
   onBack: () => void;
 }
+
+type ShareChannel = 'linkedin' | 'x' | 'facebook' | 'instagram';
+
+const APP_SHARE_LINK = ((): string => {
+  const configured = import.meta.env.VITE_APP_PUBLIC_URL?.trim();
+  return configured && configured.length > 0
+    ? configured.replace(/\/+$/, '')
+    : 'https://minimon-deck-game.netlify.app/';
+})();
+const SHARE_CHANNELS: ShareChannel[] = ['linkedin', 'x', 'facebook', 'instagram'];
+const shareUrlBuilders: Record<ShareChannel, (message: string) => string> = {
+  linkedin: (message) =>
+    `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(APP_SHARE_LINK)}&title=${encodeURIComponent('Minimon Lab')}&summary=${encodeURIComponent(message)}&source=${encodeURIComponent('Minimon Lab')}&text=${encodeURIComponent(message)}`,
+  x: (message) =>
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(APP_SHARE_LINK)}`,
+  facebook: (message) =>
+    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_LINK)}&quote=${encodeURIComponent(message)}`,
+  instagram: () => 'https://www.instagram.com',
+};
+
+const copyTextToClipboard = async (text: string) => {
+  if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+
+  if (typeof document === 'undefined') {
+    throw new Error('Clipboard not available');
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', 'true');
+  textarea.style.position = 'absolute';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const successful = document.execCommand('copy');
+  document.body.removeChild(textarea);
+  if (!successful) {
+    throw new Error('Clipboard not available');
+  }
+};
 
 const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   const { t } = useTranslation();
@@ -19,6 +62,12 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedArchive, setSelectedArchive] = useState<ArchivedGame | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareMessage, setShareMessage] = useState('');
+  const [shareSignature, setShareSignature] = useState('');
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [copiedShareMessage, setCopiedShareMessage] = useState(false);
 
   const fetchArchives = useCallback(async () => {
     setIsLoading(true);
@@ -62,6 +111,72 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedArchive(null);
+  };
+
+  const closeShareModal = () => {
+    setShareModalOpen(false);
+    setShareMessage('');
+    setShareSignature('');
+    setShareError(null);
+    setCopiedShareMessage(false);
+  };
+
+  const handleCopyShareMessage = async () => {
+    if (!shareMessage) return;
+    try {
+      await copyTextToClipboard(shareMessage);
+      setCopiedShareMessage(true);
+      setTimeout(() => setCopiedShareMessage(false), 2000);
+    } catch (error) {
+      setShareError(error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  const handleShareAction = async (channel: ShareChannel) => {
+    setShareError(null);
+    if (!shareMessage) return;
+    try {
+      if (typeof window === 'undefined') {
+        throw new Error('Window not available');
+      }
+      if (channel === 'instagram') {
+        await copyTextToClipboard(shareMessage);
+        setCopiedShareMessage(true);
+        setTimeout(() => setCopiedShareMessage(false), 2000);
+        const shareWindow = window.open(shareUrlBuilders[channel](shareMessage), '_blank', 'noopener');
+        shareWindow?.focus();
+        return;
+      }
+      const shareWindow = window.open(shareUrlBuilders[channel](shareMessage), '_blank', 'noopener');
+      shareWindow?.focus();
+    } catch (error) {
+      setShareError(error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  const handleShareArchive = async (archive: ArchivedGame) => {
+    setShareLoading(true);
+    setShareError(null);
+    setCopiedShareMessage(false);
+    try {
+      const response = await certifyScore({
+        score: archive.score,
+        subject: archive.id,
+        deck: archive,
+      });
+      const message = t('hallOfFame.share.message', {
+        score: archive.score,
+        signature: response.signed.signatureB64,
+        link: APP_SHARE_LINK,
+      });
+      setShareMessage(message);
+      setShareSignature(response.signed.signatureB64);
+      setShareModalOpen(true);
+    } catch (error) {
+      setShareError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setShareLoading(false);
+    }
   };
 
   const sortedMinimonsInArchive = useMemo(() => { // Updated variable
@@ -127,10 +242,25 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                   </span>
                 </div>
               </div>
-                <div className="mt-4 pt-4 border-t border-gray-800 text-right">
-                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
-                    {t('hallOfFame.viewDetails')}
-                  </Button>
+                <div className="mt-4 pt-4 border-t border-gray-800 text-right space-y-2">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); openArchiveDetails(archive); }}>
+                      {t('hallOfFame.viewDetails')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleShareArchive(archive); }}
+                      disabled={shareLoading}
+                    >
+                      {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
+                    </Button>
+                  </div>
+                  {shareError && (
+                    <p className="text-xs text-right text-red-400">
+                      {t('hallOfFame.share.error', { error: shareError })}
+                    </p>
+                  )}
                 </div>
             </div>
           ))}
@@ -188,6 +318,57 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                 ))}
               </div>
             )}
+          </div>
+        </Modal>
+      )}
+      {shareModalOpen && (
+        <Modal
+          isOpen={shareModalOpen}
+          onClose={closeShareModal}
+          title={t('hallOfFame.share.title')}
+          cancelButtonText={t('common.close')}
+        >
+          <div className="space-y-4">
+            <p className="text-gray-200">{t('hallOfFame.share.description')}</p>
+            {shareError && (
+              <p className="text-sm text-red-400">
+                {t('hallOfFame.share.error', { error: shareError })}
+              </p>
+            )}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-indigo-200">{t('hallOfFame.share.channelLabel')}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {SHARE_CHANNELS.map((channel) => (
+                  <Button
+                    key={channel}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleShareAction(channel)}
+                    disabled={!shareMessage}
+                  >
+                    {t(`hallOfFame.share.channels.${channel}`)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-indigo-400">{t('hallOfFame.share.instructions')}</p>
+            <label className="text-sm font-semibold text-gray-300">{t('hallOfFame.share.messageLabel')}</label>
+            <textarea
+              value={shareMessage}
+              readOnly
+              wrap="soft"
+              className="w-full min-h-[120px] rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 resize-none break-words whitespace-pre-wrap"
+            />
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={handleCopyShareMessage} disabled={!shareMessage}>
+                {t('hallOfFame.share.copyButton')}
+              </Button>
+              {copiedShareMessage && <span className="text-xs text-lime-300">{t('hallOfFame.share.copied')}</span>}
+            </div>
+            <p className="text-xs text-gray-500 break-words whitespace-pre-wrap">
+              {t('hallOfFame.share.signatureLabel')}: {shareSignature}
+            </p>
           </div>
         </Modal>
       )}

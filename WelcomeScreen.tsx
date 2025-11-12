@@ -6,7 +6,7 @@ import Modal from './components/Modal';
 import { Sparkles, Coins, Gem, Trophy, PlayCircle, ArrowRightCircle } from 'lucide-react';
 import { MinimonRarity } from './types'; // Import MinimonRarity for display
 import { getRarityResellValue, getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity helpers
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from './i18n';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
 interface WelcomeScreenProps {

@@ -9,7 +9,7 @@ import HallOfFame from './HallOfFame';
 import { Loader2 } from 'lucide-react';
 import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
 import { getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity score helper
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from './i18n';
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 

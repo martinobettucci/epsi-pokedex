@@ -17,7 +17,11 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RH8EA8_DSoicXdw1oQInI2
    `npm install`
 2. Configure environment variables:
    - `.env` already provides `VITE_API_BASE_URL=https://epsi.journeesdecouverte.fr:22222/v1`; update it if you need to target a different API host.
+   - Add your bearer token to `VITE_BEARER_TOKEN` (defaults to `EPSI`). Treat this as a secret even though it resides in `.env`; do not commit real tokens.
+   - `.env` now also exposes `VITE_CERTIFY_SCORE_ENDPOINT=https://epsi.journeesdecouverte.fr:22222/v1/certify-score`, which the Hall of Fame uses to sign exported decks. Override it only if your signing service lives somewhere else.
+   - `.env` exposes `VITE_APP_PUBLIC_URL=https://minimon-deck-game.netlify.app/` so the share buttons always point to the official site; change it if you deploy the client under a different URL.
    - Set `GEMINI_API_KEY` in [.env.local](.env.local) if you rely on Gemini services for your build.
 3. Run the app:
    `npm run dev`
+4. When browsing the Hall of Fame, click the exported deck and “Share this deck” to request a certified signature; you can then push the prepared message to LinkedIn, X, Instagram, or Facebook with the official app link.
 4. Switch between English, Français, and Italiano from the language dropdown on the welcome screen to translate the entire interface instantly.

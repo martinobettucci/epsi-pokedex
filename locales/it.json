@@ -101,5 +101,26 @@
     "modalCollectionTitle": "Collezione di Minimon ({{count}}):",
     "modalNoMinimon": "Nessun Minimon in questo archivio.",
     "backLabel": "Torna all'inizio"
+    ,
+    "share": {
+      "title": "Esporta e condividi",
+      "description": "Firma ed esporta questo deck archiviato per pubblicarlo sul tuo social preferito con il punteggio autenticato.",
+      "buttonLabel": "Condividi questo deck",
+      "processing": "Preparazione della firma...",
+      "channelLabel": "Condividi via",
+      "instructions": "Scegli un canale per aprire il compositore con il messaggio certificato.",
+      "messageLabel": "Anteprima del messaggio",
+      "copyButton": "Copia messaggio",
+      "copied": "Messaggio copiato!",
+      "signatureLabel": "Firma",
+      "message": "Condivido con voi il mio miglior punteggio Minidek di {{score}} punti!\nGiocate anche voi e condividete il vostro punteggio!\nGioca qui: {{link}}\nIl mio punteggio autenticato tramite firma crittografica: {{signature}}",
+      "error": "Impossibile preparare il deck firmato: {{error}}",
+      "channels": {
+        "linkedin": "LinkedIn",
+        "x": "X",
+        "instagram": "Instagram",
+        "facebook": "Facebook"
+      }
+    }
   }
 }

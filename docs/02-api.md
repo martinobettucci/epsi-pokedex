@@ -8,7 +8,7 @@ Cette spécification décrit un point d’entrée HTTP public permettant de gén
 
 * **Méthode** : `GET`
 * **URL complète** : `https://epsi.journeesdecouverte.fr:22222/v1/generate`
-* **Auth** : optionnelle selon le déploiement (ex. `Authorization: Bearer <token>`)
+* **Auth** : obligatoire, le client ajoute `Authorization: Bearer <token>` où `<token>` provient de `VITE_BEARER_TOKEN` (valeur `EPSI` par défaut).
 * **Base configurable** : l’application cliente lit une variable d’environnement publique `VITE_API_BASE_URL`, qui vaut par défaut `https://epsi.journeesdecouverte.fr:22222/v1`.
 
 Aucune donnée n’est transmise en entrée. Chaque appel produit un Minimon aléatoire selon les modèles internes du service.
@@ -122,10 +122,11 @@ Ce point d’entrée reçoit un JSON, calcule une représentation canonique, sig
 
 * **Méthode** : `POST`
 * **URL complète** : `https://epsi.journeesdecouverte.fr:22222/v1/certify-score`
-* **Auth** : optionnelle selon le déploiement (ex. `Authorization: Bearer <token>`)
+* **Auth** : obligatoire ; utilisez le même jeton voté par `VITE_BEARER_TOKEN`.
 * **Content-Type (Request)** : `application/json`
 * **Content-Type (Response)** : `application/json`
 * **Base configurable** : `VITE_API_BASE_URL` par défaut `https://epsi.journeesdecouverte.fr:22222/v1`.
+* **Endpoint configurable** : utilisez `VITE_CERTIFY_SCORE_ENDPOINT` pour pointer vers un hôte/sous-chemin différent si besoin, sinon la valeur par défaut ci-dessus est utilisée.
 
 ## Corps (Request)
 
@@ -231,7 +232,7 @@ async function certifyScore({ score, subject, nonce }) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': 'Bearer <token>'
+      'Authorization': 'Bearer <token>'
     },
     body: JSON.stringify({ score, subject, nonce })
   });

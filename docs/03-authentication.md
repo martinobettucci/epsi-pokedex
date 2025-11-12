@@ -76,7 +76,7 @@ async function generateMinimon() {
 
 ## Points de vigilance
 
-* Le jeton **EPSI** doit être conservé côté client dans une configuration sécurisée (variable d’environnement, configuration build).
+* Le jeton **EPSI** (ou celui défini dans `VITE_BEARER_TOKEN`) doit être conservé côté client dans une configuration sécurisée (variable d’environnement).
 * La variable publique `VITE_API_BASE_URL` permet de rediriger les appels vers un autre endpoint ; sa valeur par défaut reste `https://epsi.journeesdecouverte.fr:22222/v1`.
 * Ne jamais inclure le jeton dans le corps de la requête ou dans l’URL.
 * Le serveur peut désactiver l’authentification si `BEARER_TOKEN` est vide.

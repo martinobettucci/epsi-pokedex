@@ -101,5 +101,26 @@
     "modalCollectionTitle": "Minimon Collection ({{count}}):",
     "modalNoMinimon": "No Minimon in this archive.",
     "backLabel": "Back to Welcome"
+  ,
+    "share": {
+      "title": "Export & Share",
+      "description": "Sign and export this Archived Minidek to post on your favorite social network with the certified score.",
+      "buttonLabel": "Share this deck",
+      "processing": "Signing the deck...",
+      "channelLabel": "Share via",
+      "instructions": "Pick a channel to open the composer with the certified message.",
+      "messageLabel": "Message preview",
+      "copyButton": "Copy message",
+      "copied": "Message copied!",
+      "signatureLabel": "Signature",
+      "message": "I’m sharing my best Minidek score of {{score}} points!\nPlay along and share your score too!\nPlay here: {{link}}\nMy authentified score by cryptographic signature: {{signature}}",
+      "error": "Unable to prepare the signed deck: {{error}}",
+      "channels": {
+        "linkedin": "LinkedIn",
+        "x": "X",
+        "instagram": "Instagram",
+        "facebook": "Facebook"
+      }
+    }
   }
 }

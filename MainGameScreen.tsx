@@ -8,7 +8,7 @@ import Button from './components/Button';
 import Modal from './components/Modal';
 import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut } from 'lucide-react';
 import { getRarityResellValue, getRarityMinidekScoreValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from './i18n';
 
 const GENERATION_COST = 10;
 

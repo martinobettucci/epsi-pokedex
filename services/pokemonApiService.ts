@@ -12,7 +12,10 @@ const API_BASE_URL = (() => {
   }
   return configuredUrl.replace(/\/+$/, '');
 })();
-const AUTH_TOKEN = 'EPSI'; // Statically defined Bearer token as per docs/03-authentication.md
+const AUTH_TOKEN = (() => {
+  const token = import.meta.env.VITE_BEARER_TOKEN;
+  return token?.trim() || 'EPSI';
+})(); // Statically defined Bearer token as per docs/03-authentication.md
 const REQUEST_TIMEOUT = 30000; // 30 seconds timeout for the API request
 
 /**
