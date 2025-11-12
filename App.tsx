@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
 import { getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity score helper
 import { useTranslation } from './i18n';
+import Footer from './components/Footer';
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 
@@ -176,27 +177,30 @@ const App: React.FC = () => {
   return (
     <>
       <ParticleCanvas /> {/* Render ParticleCanvas as a background */}
-      <div className="relative z-10"> {/* Ensure content is above particles */}
-        {currentScreen === 'welcome' && (
-          <WelcomeScreen
-            canContinueGame={canContinueGame}
-            hasUnarchivedProgress={hasUnarchivedProgress}
-            onStartNewGame={handleStartNewGame}
-            onContinueGame={handleContinueGame}
-            onViewHallOfFame={handleViewHallOfFame}
-          />
-        )}
-        {currentScreen === 'mainGame' && (
-          <MainGameScreen
-            onViewHallOfFame={handleViewHallOfFame}
-            onEndGameAndArchive={handleEndGameAndArchive} // New prop for ending and archiving
-          />
-        )}
-        {currentScreen === 'hallOfFame' && (
-          <HallOfFame
-            onBack={handleBackToWelcomeFromHallOfFame} // Go back to welcome screen when leaving hall of fame
-          />
-        )}
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <div className="flex-grow">
+          {currentScreen === 'welcome' && (
+            <WelcomeScreen
+              canContinueGame={canContinueGame}
+              hasUnarchivedProgress={hasUnarchivedProgress}
+              onStartNewGame={handleStartNewGame}
+              onContinueGame={handleContinueGame}
+              onViewHallOfFame={handleViewHallOfFame}
+            />
+          )}
+          {currentScreen === 'mainGame' && (
+            <MainGameScreen
+              onViewHallOfFame={handleViewHallOfFame}
+              onEndGameAndArchive={handleEndGameAndArchive} // New prop for ending and archiving
+            />
+          )}
+          {currentScreen === 'hallOfFame' && (
+            <HallOfFame
+              onBack={handleBackToWelcomeFromHallOfFame} // Go back to welcome screen when leaving hall of fame
+            />
+          )}
+        </div>
+        <Footer />
       </div>
     </>
   );
