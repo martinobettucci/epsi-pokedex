@@ -21,9 +21,13 @@ This document tracks all development tasks for the Pokémon Generator applicatio
 - [x] Investigated user report that "resell does not work or is not implemented"; confirmed implementation is present and logically sound. Provided debugging guidance.
 - [x] Implemented a request timeout for the Pokémon generation API call to handle potential server-side delays and provide a clearer error message.
 - [x] The sell functionality is not working, the button in the UI does nothing. Investigated and fixed the stale state closure bug in the confirmation modal handler.
+- [x] Collection is stored and retrieved in the indexeddb of the visiting browser.
+- [x] Implement dynamic resell value based on Pokémon rarity.
+- [x] Add a sorting system based on rarity.
+- [x] Add a Pokédex scoring system based on the number of owned and resold Pokémon, with a higher value for owned ones.
 
 ## In Progress
 
-- [ ] Collection must be stored and retrieved in the indexeddb of the visiting browser
-
 ## Planned
+- [ ] Rehault the full app to be a modern sleek dark neon stylish app with dynamic animations and particle effects.
+- [ ] Add a welcome page that teach the user about the game and its mechanics
