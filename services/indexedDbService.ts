@@ -1,6 +1,6 @@
 // services/indexedDbService.ts
 
-import { Pokemon, TokenBalance, DB_NAME, DB_VERSION, StoreNames, PokemonStatus } from '../types';
+import { Pokemon, TokenBalance, DB_NAME, DB_VERSION, StoreNames, PokemonStatus, ArchivedGame, AppState } from '../types';
 
 /**
  * A service for interacting with IndexedDB.
@@ -24,23 +24,29 @@ export class IndexedDbService {
       request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
         const db = (event.target as IDBOpenDBRequest).result;
 
-        // Clear existing stores if upgrading from a previous version
-        if (event.oldVersion < 1) { // If upgrading from a fresh or old version before DB_VERSION 1
-          if (db.objectStoreNames.contains('notes')) {
-            db.deleteObjectStore('notes');
+        // Clear existing stores if upgrading from a previous version (if schema changed significantly)
+        // For version 3, we expect to add new stores. If upgrading from older versions, ensure compatibility.
+        if (event.oldVersion < 3) { // If upgrading from a version older than 3
+          // If you had 'notes' in version < 1, you might delete it here
+          // if (db.objectStoreNames.contains('notes')) {
+          //   db.deleteObjectStore('notes');
+          // }
+
+          // Ensure existing stores are present
+          if (!db.objectStoreNames.contains(StoreNames.Pokemons)) {
+            db.createObjectStore(StoreNames.Pokemons, { keyPath: 'id' });
           }
-        }
+          if (!db.objectStoreNames.contains(StoreNames.Settings)) {
+            db.createObjectStore(StoreNames.Settings, { keyPath: 'id' });
+          }
 
-        // Create the 'pokemons' object store with 'id' as the keyPath.
-        // No autoIncrement as 'id' comes from the API.
-        if (!db.objectStoreNames.contains(StoreNames.Pokemons)) {
-          db.createObjectStore(StoreNames.Pokemons, { keyPath: 'id' });
-        }
-
-        // Create the 'settings' object store for token balance, etc.
-        // It will have a fixed key like 'tokenBalance'.
-        if (!db.objectStoreNames.contains(StoreNames.Settings)) {
-          db.createObjectStore(StoreNames.Settings, { keyPath: 'id' });
+          // Create new stores for DB_VERSION 3
+          if (!db.objectStoreNames.contains(StoreNames.Archives)) {
+            db.createObjectStore(StoreNames.Archives, { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains(StoreNames.AppState)) {
+            db.createObjectStore(StoreNames.AppState, { keyPath: 'id' });
+          }
         }
       };
 
@@ -60,39 +66,41 @@ export class IndexedDbService {
 
   /**
    * Helper to perform a transaction on the database.
-   * @param storeName The name of the object store to transact on.
+   * @param storeNames The name(s) of the object store(s) to transact on.
    * @param mode The transaction mode ('readonly' or 'readwrite').
    * @param callback A function that performs operations within the transaction.
    * @returns A promise that resolves with the result of the callback.
    */
   private async withTransaction<T>(
-    storeName: StoreNames,
+    storeNames: StoreNames | StoreNames[],
     mode: IDBTransactionMode,
-    callback: (store: IDBObjectStore) => Promise<T>,
+    callback: (store: IDBObjectStore, transaction: IDBTransaction) => Promise<T>,
   ): Promise<T> {
     const db = await this.openDatabase();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(storeName, mode);
-      const store = transaction.objectStore(storeName);
-
+      const transaction = db.transaction(storeNames, mode);
+      
       transaction.oncomplete = () => {
         // Transaction committed successfully.
       };
 
       transaction.onerror = (event: Event) => {
         const error = (event.target as IDBTransaction).error;
-        console.error(`Transaction error for store ${storeName}:`, error);
+        console.error(`Transaction error for store(s) ${storeNames}:`, error);
         reject(error);
       };
 
       transaction.onabort = (event: Event) => {
         const error = (event.target as IDBTransaction).error;
-        console.error(`Transaction aborted for store ${storeName}:`, error);
+        console.error(`Transaction aborted for store(s) ${storeNames}:`, error);
         reject(error);
       };
 
       // Execute the callback within the transaction and handle its resolution/rejection
-      callback(store)
+      // If storeNames is an array, pass the first store to the callback.
+      // The callback can access other stores via transaction.objectStore(name) if needed.
+      const store = typeof storeNames === 'string' ? transaction.objectStore(storeNames) : transaction.objectStore(storeNames[0]);
+      callback(store, transaction)
         .then(resolve)
         .catch(reject);
     });
@@ -198,6 +206,139 @@ export class IndexedDbService {
         const request = store.put(newBalance);
         request.onsuccess = () => {
           resolve(newBalance);
+        };
+        request.onerror = (event: Event) => {
+          reject((event.target as IDBRequest).error);
+        };
+      });
+    });
+  }
+
+  // --- Archive Operations (Hall of Fame) ---
+
+  /**
+   * Archives the current game state into the 'archives' object store.
+   * @param score The final score of the game being archived.
+   * @param tokenBalance The final token balance of the game being archived.
+   * @param pokemons The collection of Pokémon at the time of archiving.
+   * @returns A promise that resolves with the archived game object.
+   */
+  public async archiveCurrentGame(score: number, tokenBalance: number, pokemons: Pokemon[]): Promise<ArchivedGame> {
+    return this.withTransaction<ArchivedGame>(StoreNames.Archives, 'readwrite', (store) => {
+      return new Promise((resolve, reject) => {
+        const archivedGame: ArchivedGame = {
+          id: `archive-${Date.now()}`, // Unique ID for the archive
+          score,
+          tokenBalance,
+          pokemons,
+          archiveDate: new Date().toISOString(),
+        };
+        const request = store.add(archivedGame);
+        request.onsuccess = () => {
+          resolve(archivedGame);
+        };
+        request.onerror = (event: Event) => {
+          reject((event.target as IDBRequest).error);
+        };
+      });
+    });
+  }
+
+  /**
+   * Retrieves all archived games from the 'archives' object store.
+   * @returns A promise that resolves with an array of ArchivedGame objects.
+   */
+  public async getArchivedGames(): Promise<ArchivedGame[]> {
+    return this.withTransaction<ArchivedGame[]>(StoreNames.Archives, 'readonly', (store) => {
+      return new Promise((resolve, reject) => {
+        const request = store.getAll();
+        request.onsuccess = (event: Event) => {
+          resolve((event.target as IDBRequest).result as ArchivedGame[]);
+        };
+        request.onerror = (event: Event) => {
+          reject((event.target as IDBRequest).error);
+        };
+      });
+    });
+  }
+
+  /**
+   * Clears all current game data (pokemons and resets token balance).
+   * Also resets the app state to indicate no active game.
+   * @returns A promise that resolves when the data is cleared.
+   */
+  public async clearCurrentGameData(): Promise<void> {
+    return this.withTransaction<void>([StoreNames.Pokemons, StoreNames.Settings, StoreNames.AppState], 'readwrite', async (store, transaction) => {
+      const pokemonStore = transaction.objectStore(StoreNames.Pokemons);
+      const settingsStore = transaction.objectStore(StoreNames.Settings);
+      const appStateStore = transaction.objectStore(StoreNames.AppState);
+
+      // Clear all pokemons
+      await new Promise<void>((resolve, reject) => {
+        const clearRequest = pokemonStore.clear();
+        clearRequest.onsuccess = () => resolve();
+        clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+
+      // Reset token balance
+      const initialBalance: TokenBalance = { id: 'tokenBalance', amount: 100 };
+      await new Promise<void>((resolve, reject) => {
+        const putRequest = settingsStore.put(initialBalance);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+
+      // Update app state to reflect a new game started or no active game
+      const newAppState: AppState = { id: 'currentAppState', hasActiveGame: true, lastPlayedDate: new Date().toISOString() };
+      await new Promise<void>((resolve, reject) => {
+        const putRequest = appStateStore.put(newAppState);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+      });
+    });
+  }
+
+  // --- App State Operations ---
+
+  /**
+   * Retrieves the current application state.
+   * If no state exists, it initializes it with a default (no active game).
+   * @returns A promise that resolves with the current AppState.
+   */
+  public async getAppState(): Promise<AppState> {
+    return this.withTransaction<AppState>(StoreNames.AppState, 'readwrite', (store) => {
+      return new Promise((resolve, reject) => {
+        const request = store.get('currentAppState');
+        request.onsuccess = async (event: Event) => {
+          let state = (event.target as IDBRequest).result as AppState | undefined;
+          if (!state) {
+            // Initialize with default state if not found
+            const defaultState: AppState = { id: 'currentAppState', hasActiveGame: false };
+            const putRequest = store.add(defaultState);
+            putRequest.onsuccess = () => resolve(defaultState);
+            putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+          } else {
+            resolve(state);
+          }
+        };
+        request.onerror = (event: Event) => {
+          reject((event.target as IDBRequest).error);
+        };
+      });
+    });
+  }
+
+  /**
+   * Updates the application state.
+   * @param newAppState The new AppState object.
+   * @returns A promise that resolves with the updated AppState.
+   */
+  public async saveAppState(newAppState: AppState): Promise<AppState> {
+    return this.withTransaction<AppState>(StoreNames.AppState, 'readwrite', (store) => {
+      return new Promise((resolve, reject) => {
+        const request = store.put(newAppState);
+        request.onsuccess = () => {
+          resolve(newAppState);
         };
         request.onerror = (event: Event) => {
           reject((event.target as IDBRequest).error);

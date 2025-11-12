@@ -43,11 +43,33 @@ export interface TokenBalance {
 }
 
 /**
+ * Interface for an archived game, storing historical Pokédex data.
+ */
+export interface ArchivedGame {
+  id: string; // Unique ID for the archived game (e.g., timestamp)
+  score: number;
+  tokenBalance: number;
+  pokemons: Pokemon[]; // Snapshot of pokemons at the time of archiving
+  archiveDate: string; // ISO 8601 string when the game was archived
+}
+
+/**
+ * Interface for the global application state.
+ */
+export interface AppState {
+  id: 'currentAppState'; // Fixed ID for the single app state entry
+  hasActiveGame: boolean; // True if there's an ongoing game, false otherwise
+  lastPlayedDate?: string; // Optional: ISO 8601 string of the last time an active game was played
+}
+
+/**
  * Enum for IndexedDB object store names.
  */
 export enum StoreNames {
   Pokemons = 'pokemons',
   Settings = 'settings', // For storing global settings like token balance
+  Archives = 'archives', // For storing historical game archives (Hall of Fame)
+  AppState = 'appState', // For storing global app state like if a game is active
 }
 
 /**
@@ -58,7 +80,7 @@ export const DB_NAME = 'PokemonGeneratorDB';
 /**
  * Database version for IndexedDB. Increment this number when making schema changes.
  */
-export const DB_VERSION = 2; // Incrementing version from 1 to 2
+export const DB_VERSION = 3; // Incrementing version from 2 to 3 for new stores
 
 /**
  * Interface for a general application message (e.g., success, error).

@@ -7,9 +7,8 @@ This document tracks all development tasks for the Pokémon Generator applicatio
 - [x] Initial setup of project-manager documentation (`general-objectives.md`, `styling-guide.md`, `tasks.md`).
 - [x] Updated `AGENT.md` to enforce `tasks.md` updates.
 - [x] Refactor `types.ts` to include `Pokemon`, `TokenBalance`, `PokemonRarity`, `PokemonStatus` interfaces/enums and update `StoreNames`.
-- [x] Refactor `services/indexedDbService.ts` to manage `pokemons` and `settings` stores, including CRUD for Pokémon and token balance.
 - [x] Created `services/pokemonApiService.ts` for handling external Pokémon generation API calls, authentication, and error handling.
-- [x] Refactor `App.tsx` to integrate Pokémon generation, token management, and collection display.
+- [x] Refactor `App.tsx` to integrate Pokémon generation, token management, and collection display. (Pre-refactor state)
 - [x] Implement UI for generating Pokémon, including token deduction and display of generated Pokémon.
 - [x] Implement "Resell Pokémon" functionality, including token refund and status update.
 - [x] Implement robust error handling and user feedback for API calls and IndexedDB operations.
@@ -25,11 +24,13 @@ This document tracks all development tasks for the Pokémon Generator applicatio
 - [x] Implement dynamic resell value based on Pokémon rarity.
 - [x] Add a sorting system based on rarity.
 - [x] Add a Pokédex scoring system based on the number of owned and resold Pokémon, with a higher value for owned ones.
+- [x] Add a welcome page that teach the user about the game and its mechanics.
+- [x] Add a NEW GAME that resets the pokedex of the user (with archiving option).
+- [x] Add an hall of fame to show the best older pokedex the user have created (history is kept on new game).
+- [x] Implement a "Continue Game" option on the welcome screen if an active game is detected.
+- [x] Welcome page do not explains how the scoring system is calculated
 
 ## In Progress
 
 ## Planned
 - [ ] Rehault the full app to be a modern sleek dark neon stylish app with dynamic animations and particle effects.
-- [ ] Add a welcome page that teach the user about the game and its mechanics
-- [ ] Add a NEW GAME that resets the pokedex of the user
-- [ ] Add an hall of fame to show the best older pokedex the user have created (you must keep an history on new game)
