@@ -8,6 +8,15 @@
     "suffix": "and proudly using AI by",
     "about": "About"
   },
+  "consent": {
+    "title": "Consent Required",
+    "body": "Minimon Lab keeps your decks on your device while relying on Netlify for hosting and a private API in France.",
+    "pointDevice": "All Minimon data and state stay stored on your local device.",
+    "pointHosting": "The interface is served through Netlify and the API runs on a private server in France.",
+    "pointNoCollection": "We never collect or persist any data (not even IPs or request logs), but we cannot guarantee what Netlify records on their side.",
+    "pointAcceptance": "Continuing means you accept interacting with our API and the Netlify hosting environment.",
+    "button": "I understand and accept"
+  },
   "app": {
     "loading": "Loading Minimon Lab..."
   },

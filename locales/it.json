@@ -8,6 +8,15 @@
     "suffix": "e orgogliosamente alimentato dall’IA di",
     "about": "Chi siamo"
   },
+  "consent": {
+    "title": "Consenso richiesto",
+    "body": "Minimon Lab conserva i tuoi deck sul dispositivo mentre si appoggia a Netlify per l’interfaccia e a un’API privata in Francia.",
+    "pointDevice": "Tutti i dati e lo stato dei Minimon rimangono memorizzati localmente sul tuo dispositivo.",
+    "pointHosting": "L’interfaccia viene servita tramite Netlify e l’API gira su un server privato francese.",
+    "pointNoCollection": "Non raccogliamo né conserviamo alcun dato (nemmeno IP o log di richieste), ma non possiamo garantire cosa registri Netlify.",
+    "pointAcceptance": "Continuando, accetti di interagire con i nostri server e con l’ambiente di hosting Netlify.",
+    "button": "Ho compreso e accetto"
+  },
   "app": {
     "loading": "Caricamento di Minimon Lab..."
   },
