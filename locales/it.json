@@ -44,7 +44,7 @@
       "title": "Guida strategica",
       "paragraph1": "Avvia il generatore, cerca i picchi di rarità e crea slancio: continua a evocare finché non ottieni un protagonista, conserva due ancore S nel tuo mazzo e lascia che i supporti B/C agili colmino gli spazi. Doppie comuni? Rivendile subito per avere gettoni e reinvestili nelle prossime evocazioni perché la velocità batte l'accumulo.",
       "paragraph2": "Prima di ogni grande spinta, dai un'occhiata al tuo punteggio Minidek e alla scorta di gettoni: i gettoni che tieni diventano tanti punti quando archivi, quindi salva una serie calda nell’Hall of Fame quando la curva sale e poi torna in azione per la prossima meta. I quick flip (rivendere un Minimon ancora “NEW!” in meno di 5 secondi) danno un punto extra, mentre rivendere troppo spesso la stessa rarità riduce leggermente il rimborso per mantenere il mercato vivo. Considera ogni sessione come una stagione: impara, iterazioni e mantieni accese le luci del laboratorio.",
-      "paragraph3": "Ti senti inarrestabile? Premi “Nuova partita”, crea il tuo lineup ideale e inonda i social con i migliori deck Minimon citando “P2Enjoy” così che tutta la community sappia chi detta il ritmo. Quando archivi una serie calda, l’Hall of Fame assegna un badge (Curatore, Flipper, Prenditore di rischi, Speedy gonzales) che racconta come hai costruito quel mazzo. Concludi una run in meno di 60 secondi per portarti a casa il badge Speedy gonzales e dimostrare che hai blitzato il loop.",
+      "paragraph3": "Ti senti inarrestabile? Premi “Nuova partita”, crea il tuo lineup ideale e inonda i social con i migliori deck Minimon citando “P2Enjoy” così che tutta la community sappia chi detta il ritmo. Quando archivi una serie calda, l’Hall of Fame assegna un badge (Curatore, Flipper, Prenditore di rischi, Speedy gonzales) che racconta come hai costruito quel mazzo. Concludi una run in meno di 20 secondi per portarti a casa il badge Speedy gonzales e dimostrare che hai blitzato il loop.",
       "badgeTitle": "Come guadagnare i badge",
       "badgeCurator": "Curatore: conserva più del doppio dei Minimon rispetto a quelli rivenduti.",
       "badgeFlipper": "Flipper: rivendi almeno tanti quanti ne conservi e mantieni la liquidità.",
@@ -52,7 +52,7 @@
       "badgeBrave": "Corsa coraggiosa: rivendi un S o S+ senza perdere il ritmo.",
       "badgeNoBrainer": "Senza pensieri: quick flip di tre Minimon entro la finestra di 5 secondi.",
       "badgeNoPlayer": "Niente giocatori: archivia un run senza rivendere nemmeno un Minimon.",
-      "badgeSpeedy": "Speedy gonzales: archivia una run in meno di 60 secondi per dimostrare la tua velocità lampo."
+      "badgeSpeedy": "Speedy gonzales: archivia una run in meno di 20 secondi per dimostrare la tua velocità lampo."
     },
     "languageLabel": "Lingua"
   },
@@ -127,7 +127,7 @@
       "flipper": "Badge Flipper: rivendi almeno tanti quanti ne conservi.",
       "risk": "Badge Prenditore di rischi: equilibrio tra conservare e rivendere.",
       "brave": "Badge Corsa coraggiosa: rivendi un S/S+ senza perdere la spinta.",
-      "speedy": "Badge Speedy gonzales: archivia una run in meno di 60 secondi.",
+      "speedy": "Badge Speedy gonzales: archivia una run in meno di 20 secondi.",
       "nobrainer": "Badge Senza pensieri: esegui tre quick flip.",
       "noplayer": "Badge Niente giocatori: archivia senza rivendere un Minimon."
     },

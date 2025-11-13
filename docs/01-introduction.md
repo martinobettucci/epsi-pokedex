@@ -14,7 +14,7 @@ L’application permet à chaque utilisateur de générer, posséder et revendre
 * À la fin d’une session archivée, chaque jeton restant devient un petit bonus de score via une formule à rendements décroissants (0.5×tokens + 2.5×√tokens).
 * Des « quick flips » (revendre un Minimon encore « NEW! » en moins de 5 secondes) offrent un point bonus, tandis que la revente répétée d’une même rareté baisse temporairement le remboursement.
 * L’Hall of Fame ajoute des badges (Curateur, Flipper, Prise de risque, Course courageuse, Sans hésitation, Pas de joueur, Speedy gonzales) pour documenter le style de chaque run (garde, revente, gros risques, quick flips agressifs, course courte ou aucune revente).
-* Les runs archivés reçoivent un badge « Curateur », « Flipper » ou « Prise de risque » dans le Hall of Fame selon leur style (garde vs revente) et leur tempo, et un badge Speedy gonzales s’il faut moins de 60 secondes pour terminer la run.
+* Les runs archivés reçoivent un badge « Curateur », « Flipper » ou « Prise de risque » dans le Hall of Fame selon leur style (garde vs revente) et leur tempo, et un badge Speedy gonzales s’il faut moins de 20 secondes pour terminer la run.
 * Le solde de jetons ne peut jamais être négatif.
 
 Le solde et les actifs sont sauvegardés localement pour permettre une expérience **offline**.
