@@ -15,7 +15,10 @@ import Footer from './components/Footer';
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 const SCORE_VERSION = 'v2.0';
 
+const SPEEDY_RUN_SECONDS = 60;
+
 const determineStyleBadge = (minimons: Minimon[], telemetry: ArchiveTelemetry): StyleBadge => {
+  if (telemetry.sessionDurationSeconds < SPEEDY_RUN_SECONDS) return 'Speedy gonzales';
   if (telemetry.soldHighRarity) return 'Brave run';
   if (telemetry.quickFlipCount >= 3) return 'No brainer';
   if (telemetry.resellCount === 0) return 'No player';

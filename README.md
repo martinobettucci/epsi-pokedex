@@ -27,4 +27,4 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RH8EA8_DSoicXdw1oQInI2
 4. Switch between English, Français, and Italiano from the language dropdown on the welcome screen to translate the entire interface instantly.
 5. When the app is served under `*.lelabs.tech`, Umami analytics bootstraps automatically via the `analytics.p2enjoy.studio` script; no additional setup is needed.
 6. Score/retention note: quick-flipping a duplicate within 5 seconds grants bonus points, while repeating the same rarity lowers refunds slightly to keep the market flowing; remaining tokens convert via the diminishing formula documented in `docs/01-introduction.md`.
-7. The welcome “Strategic Guide” now explains the badge system (Curator, Flipper, Risk-taker, Brave run, No brainer, No player) and the Hall of Fame pages label runs accordingly so you know exactly how your next strategy scores.
+7. The welcome “Strategic Guide” now explains the badge system (Curator, Flipper, Risk-taker, Brave run, No brainer, No player, Speedy gonzales) and the Hall of Fame pages label runs accordingly so you know exactly how your next strategy scores.

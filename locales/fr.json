@@ -44,14 +44,15 @@
       "title": "Guide stratégique",
       "paragraph1": "Lance le générateur, poursuis les pics de rareté et crée de l'élan : roule jusqu'à obtenir une tête d'affiche, garde deux piliers S dans ton deck et laisse des supports B/C agiles combler les trous. Les communs en double ? Revends-les rapidement pour récupérer des jetons et relance un nouvel appel car la vitesse bat la thésaurisation.",
       "paragraph2": "Avant chaque grosse poussée, jette un œil à ton score Minidek et à ta réserve de jetons : les jetons que tu conserves deviennent autant de points quand tu archives, alors sauvegarde une série chaude dans le Hall of Fame quand la courbe culmine puis replonge-toi pour la prochaine méta. Les quick flips (revendre un Minimon encore « NEW! » en moins de 5 secondes) rapportent un point bonus, tandis que répéter une même rareté réduit un peu le remboursement pour garder un marché vivant. Considère chaque session comme une saison : apprends, itère et garde les lumières du labo allumées.",
-      "paragraph3": "Tu te sens imbattable ? Clique sur « Nouvelle partie », compose ta formation idéale et inonde les réseaux sociaux avec ton meilleur deck Minimon en citant « P2Enjoy » pour que toute la communauté sache qui impose le rythme. Quand tu archives une série chaude, le Hall of Fame ajoute un badge (Curateur, Flipper, Prise de risque) qui raconte ton style de jeu.",
+      "paragraph3": "Tu te sens imbattable ? Clique sur « Nouvelle partie », compose ta formation idéale et inonde les réseaux sociaux avec ton meilleur deck Minimon en citant « P2Enjoy » pour que toute la communauté sache qui impose le rythme. Quand tu archives une série chaude, le Hall of Fame ajoute un badge (Curateur, Flipper, Prise de risque, Speedy gonzales) qui raconte ton style de jeu. Termine une partie en moins de 60 secondes pour décrocher le badge Speedy gonzales et montrer que tu as blitzé la session.",
       "badgeTitle": "Comment gagner des badges",
       "badgeCurator": "Curateur : garde plus de deux fois plus de Minimon que tu n’en revends.",
       "badgeFlipper": "Flipper : revends au moins autant que tu gardes et reste liquide.",
       "badgeRisk": "Prise de risque : équilibre garde et revente pour un run hybride.",
       "badgeBrave": "Course courageuse : revends un S ou S+ en gardant la pression.",
       "badgeNoBrainer": "Sans hésitation : quick flip trois Minimon dans leur fenêtre de 5 secondes.",
-      "badgeNoPlayer": "Pas de joueur : archive une partie sans revendre un seul Minimon."
+      "badgeNoPlayer": "Pas de joueur : archive une partie sans revendre un seul Minimon.",
+      "badgeSpeedy": "Speedy gonzales : archive un run en moins de 60 secondes pour prouver ta course éclair."
     },
     "languageLabel": "Langue"
   },
@@ -118,8 +119,19 @@
       "Risk-taker": "Prise de risque",
       "Brave run": "Course courageuse",
       "No brainer": "Sans hésitation",
-      "No player": "Pas de joueur"
+      "No player": "Pas de joueur",
+      "Speedy gonzales": "Speedy gonzales"
     },
+    "legend": {
+      "curator": "Badge Curateur : garde plus de deux fois plus de Minimon que tu n’en revends.",
+      "flipper": "Badge Flipper : revends au moins autant que tu gardes.",
+      "risk": "Badge Prise de risque : équilibre entre garde et revente.",
+      "brave": "Badge Course courageuse : revend un S/S+ en gardant l’élan.",
+      "speedy": "Badge Speedy gonzales : archive un run en moins de 60 secondes.",
+      "nobrainer": "Badge Sans hésitation : réalise trois quick flips.",
+      "noplayer": "Badge Pas de joueur : archive sans revendre."
+    },
+    "help": "Besoin d’aide pour les badges ?",
     "telemetry": {
       "rolls": "Lancers",
       "tokens": "Jetons dépensés",
@@ -140,7 +152,7 @@
       "copyButton": "Copier le message",
       "copied": "Message copié !",
       "signatureLabel": "Signature",
-      "message": "Je vous partage mon meilleur score Minidek de {{score}} points !\nJouez aussi et partagez votre score !\nJouez ici : {{link}}\nMon score authentifié par signature cryptographique : {{signature}}",
+      "message": "Je vous partage mon meilleur score Minidek de {{score}} points !\nBadge : {{badge}}\nJouez aussi et partagez votre score !\nJouez ici : {{link}}\nMon score authentifié par signature cryptographique : {{signature}}",
       "error": "Impossible de préparer le deck signé : {{error}}",
       "channels": {
         "linkedin": "LinkedIn",

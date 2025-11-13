@@ -37,6 +37,10 @@ const badgeStyles: Record<StyleBadge, string> = {
   Curator: 'bg-amber-300 text-amber-900',
   Flipper: 'bg-slate-200 text-slate-900',
   'Risk-taker': 'bg-rose-500 text-white',
+  'Brave run': 'bg-orange-400 text-orange-900',
+  'No brainer': 'bg-cyan-300 text-cyan-900',
+  'No player': 'bg-slate-600 text-white',
+  'Speedy gonzales': 'bg-lime-300 text-lime-900',
 };
 
 const copyTextToClipboard = async (text: string) => {
@@ -174,10 +178,15 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
         subject: archive.id,
         deck: archive,
       });
+      const badgeLabel =
+        (archive.telemetry?.styleBadge && t(`hallOfFame.badges.${archive.telemetry.styleBadge}`)) ||
+        archive.telemetry?.styleBadge ||
+        t('hallOfFame.badges.Curator');
       const message = t('hallOfFame.share.message', {
         score: archive.score,
         signature: response.signed.signatureB64,
         link: APP_SHARE_LINK,
+        badge: badgeLabel,
       });
       setShareMessage(message);
       setShareSignature(response.signed.signatureB64);
@@ -205,14 +214,35 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen relative z-10">
-      <div className="flex items-center justify-between mb-8">
-        <Button variant="ghost" onClick={onBack} aria-label={t('hallOfFame.backLabel')}>
-          <ArrowLeft className="h-6 w-6 text-gray-400 hover:text-indigo-400" />
-        </Button>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-center text-fuchsia-400 drop-shadow-lg flex-grow tracking-wide">
-          {t('hallOfFame.title')}
-        </h1>
-        <div className="w-10"></div> {/* Spacer to balance header */}
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={onBack} aria-label={t('hallOfFame.backLabel')}>
+            <ArrowLeft className="h-6 w-6 text-gray-400 hover:text-indigo-400" />
+          </Button>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-center text-fuchsia-400 drop-shadow-lg flex-grow tracking-wide">
+            {t('hallOfFame.title')}
+          </h1>
+          <div className="w-10"></div> {/* Spacer to balance header */}
+        </div>
+        <p className="mt-2 text-[0.65rem] uppercase tracking-[0.2em] text-gray-400">
+          {t('hallOfFame.help')}
+        </p>
+        <div className="flex flex-wrap gap-2 bg-white/5 rounded-2xl px-4 py-3 text-[0.7rem] text-gray-200 shadow-inner border border-white/10">
+          {[
+            ['🛡️', 'legend.curator'],
+            ['⚡', 'legend.flipper'],
+            ['🎲', 'legend.risk'],
+            ['🔥', 'legend.brave'],
+            ['💨', 'legend.speedy'],
+            ['⚙️', 'legend.nobrainer'],
+            ['🤐', 'legend.noplayer'],
+          ].map(([icon, key]) => (
+            <span key={key} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10">
+              <span aria-hidden="true">{icon}</span>
+              {t(`hallOfFame.${key}`)}
+            </span>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
@@ -275,6 +305,9 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                           handleShareArchive(archive);
                         }}
                         disabled={shareLoading}
+                        className={`${
+                          index < 3 ? 'animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.5)]' : ''
+                        }`}
                       >
                         {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
                       </Button>

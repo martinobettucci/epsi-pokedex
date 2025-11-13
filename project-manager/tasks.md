@@ -40,11 +40,13 @@ This document tracks all development tasks for the Minimon Generator application
 - [x] Added a configurable balance module (refunds, owned/resold weights, overflow policy, token-to-score formula, quick-flip bonus) and wired it into live scoring, archives, and sharing.
 - [x] Implemented quick-flip telemetry, market fatigue refunds, and detailed run telemetry storage (rolls, tokens, quick flips, style badges), then surface those badges/telemetry in the Hall of Fame.
 - [x] Documented the new economy in docs/locales and README plus added conditional Umami + shared footer/analytics enhancements for tracking deployments.
+- [x] Added the Speedy gonzales badge for sub-60-second runs and described it across the welcome guide, Hall of Fame legend, and docs.
 
 ## In Progress
-- [ ] Define a tunable scoring/resell configuration block (genCost, refund table, owned/resell weights, tokens-to-score formula, top-N limits) so future adjustments aren’t hard-coded.
-- [ ] Apply the new scoring/token conversion logic the UI already uses (archive + live score) and adjust resell bonus stories, ensuring the Hall of Fame shows “scored by vX.Y” metadata.
-- [ ] Update docs/strategy copy and telemetry suggestions to describe the token-rock/pity/cooldown balancing plan and the new “share championship deck” CTA below each score.
-- [ ] Add instrumentation hooks (events or counters) for bankroll stats, rolls, and scores to observe the new economy.
+- [x] Define a tunable scoring/resell configuration block (genCost, refund table, owned/resell weights, tokens-to-score formula, top-N limits) so future adjustments aren’t hard-coded.
+- [x] Apply the new scoring/token conversion logic the UI already uses (archive + live score) and adjust resell bonus stories, ensuring the Hall of Fame shows “scored by vX.Y” metadata.
+- [x] Update docs/strategy copy and telemetry suggestions to describe the token-rock/pity/cooldown balancing plan and the new “share championship deck” CTA below each score.
+- [x] Add instrumentation hooks (events or counters) for bankroll stats, rolls, and scores to observe the new economy.
+- [x] Display the localized `hallOfFame.legend.help` text above the badge legend, keeping the share badge label logic updated and stable.
 
 ## Planned

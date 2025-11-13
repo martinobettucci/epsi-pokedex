@@ -51,7 +51,8 @@ export type StyleBadge =
   | 'Risk-taker'
   | 'Brave run'
   | 'No brainer'
-  | 'No player';
+  | 'No player'
+  | 'Speedy gonzales';
 
 export interface ArchiveTelemetry {
   rolls: number;

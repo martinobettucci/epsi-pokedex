@@ -165,6 +165,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <li>{t('welcome.guide.badgeBrave')}</li>
               <li>{t('welcome.guide.badgeNoBrainer')}</li>
               <li>{t('welcome.guide.badgeNoPlayer')}</li>
+              <li>{t('welcome.guide.badgeSpeedy')}</li>
             </ul>
           </div>
           </div>

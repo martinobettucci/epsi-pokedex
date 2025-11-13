@@ -44,14 +44,15 @@
       "title": "Strategic Guide",
       "paragraph1": "Spin up the generator, chase rarity spikes, and build momentum: roll until you land a headliner, keep two S-tier anchors in your deck, then let agile B/C supporters fill the gaps. Duplicate commons? Flip them fast for tokens and pour that fuel back into fresh summons because velocity beats hoarding.",
       "paragraph2": "Before every big push, glance at your Minidek score and token stash: the tokens you’re still holding will become a matching number of points when you archive, so bank a hot streak to the Hall of Fame when the curve peaks then dive back in for the next meta shift. Quick flips (reselling a fresh Minimon in under 5 seconds while it still shows “New!”) add extra score, while repeating the same rarity lowers the refund slightly to keep the market fresh. Treat every session like a seasonal ladder-learn, iterate, and keep the lab lights on.",
-      "paragraph3": "Feeling unstoppable? Smash “Start New Game”, craft your dream lineup, then flood social networks with your best Minimon decks while quoting “P2Enjoy” so the whole community knows who’s setting the pace. When you bank a hot streak, the Hall of Fame awards badges (Curator, Flipper, Risk-taker) that show the story behind the run.",
+      "paragraph3": "Feeling unstoppable? Smash “Start New Game”, craft your dream lineup, then flood social networks with your best Minimon decks while quoting “P2Enjoy” so the whole community knows who’s setting the pace. When you bank a hot streak, the Hall of Fame awards badges (Curator, Flipper, Risk-taker, Speedy gonzales) that show the story behind the run. Finish a run in under 60 seconds to earn the Speedy gonzales badge and let the Hall know you blitzed the loop.",
       "badgeTitle": "How to earn badges",
       "badgeCurator": "Curator: keep more than twice as many Minimon as you resell.",
       "badgeFlipper": "Flipper: resell at least as many as you keep and stay liquid.",
       "badgeRisk": "Risk-taker: balance keeping and flipping for a hybrid run.",
       "badgeBrave": "Brave run: sell an S or S+ while staying aggressive.",
       "badgeNoBrainer": "No brainer: quick-flip three Minimon within their 5s window.",
-      "badgeNoPlayer": "No player: archive without reselling a single Minimon."
+      "badgeNoPlayer": "No player: archive without reselling a single Minimon.",
+      "badgeSpeedy": "Speedy gonzales: archive a run in less than 60 seconds to show off the lightning pace."
     },
     "languageLabel": "Language"
   },
@@ -118,16 +119,26 @@
       "Risk-taker": "Risk-taker",
       "Brave run": "Brave run",
       "No brainer": "No brainer",
-      "No player": "No player"
+      "No player": "No player",
+      "Speedy gonzales": "Speedy gonzales"
     },
+    "legend": {
+      "curator": "Curator badge: keep twice as many Minimon as you resell.",
+      "flipper": "Flipper badge: sell at least as many as you keep.",
+      "risk": "Risk-taker badge: balanced keep/flip run.",
+      "brave": "Brave run badge: sell an S/S+ while pressing forward.",
+      "speedy": "Speedy gonzales badge: finish a run in less than 60 seconds.",
+      "nobrainer": "No brainer badge: pull off three quick flips.",
+      "noplayer": "No player badge: archive without selling."
+    },
+    "help": "Help with the badges",
     "telemetry": {
       "rolls": "Rolls",
       "tokens": "Tokens spent",
       "resells": "Resells",
       "quickFlips": "Quick flips",
       "duration": "Session duration"
-    }
-  ,
+    },
     "scoredBy": "Scored by {{version}}",
     "share": {
       "proudLabel": "Proudly share this championship grade deck",
@@ -141,7 +152,7 @@
       "copyButton": "Copy message",
       "copied": "Message copied!",
       "signatureLabel": "Signature",
-      "message": "I’m sharing my best Minidek score of {{score}} points!\nPlay along and share your score too!\nPlay here: {{link}}\nMy authentified score by cryptographic signature: {{signature}}",
+      "message": "I’m sharing my best Minidek score of {{score}} points!\nBadge: {{badge}}\nPlay along and share your score too!\nPlay here: {{link}}\nMy authentified score by cryptographic signature: {{signature}}",
       "error": "Unable to prepare the signed deck: {{error}}",
       "channels": {
         "linkedin": "LinkedIn",
