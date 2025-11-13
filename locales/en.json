@@ -5,7 +5,8 @@
   },
   "footer": {
     "prefix": "Made with",
-    "suffix": "and proudly using AI by"
+    "suffix": "and proudly using AI by",
+    "about": "About"
   },
   "app": {
     "loading": "Loading Minimon Lab..."

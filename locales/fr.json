@@ -5,7 +5,8 @@
   },
   "footer": {
     "prefix": "Créé avec",
-    "suffix": "et fièrement propulsé par l’IA de"
+    "suffix": "et fièrement propulsé par l’IA de",
+    "about": "À propos"
   },
   "app": {
     "loading": "Chargement de Minimon Lab..."

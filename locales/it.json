@@ -5,7 +5,8 @@
   },
   "footer": {
     "prefix": "Creato con",
-    "suffix": "e orgogliosamente alimentato dall’IA di"
+    "suffix": "e orgogliosamente alimentato dall’IA di",
+    "about": "Chi siamo"
   },
   "app": {
     "loading": "Caricamento di Minimon Lab..."
