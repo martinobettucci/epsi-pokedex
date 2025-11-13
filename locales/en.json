@@ -171,7 +171,7 @@
       "copyButton": "Copy message",
       "copied": "Message copied!",
       "signatureLabel": "Signature",
-      "message": "I’m sharing my best Minidek score of {{score}} points!\nBadge: {{badge}}\nPlay along and share your score too!\nPlay here: {{link}}\nMy authentified score by cryptographic signature: {{signature}}",
+      "message": "Je vous partage mon meilleur score Minidek de {{score}} points !\nBadge : {{badge}}\nJouez ici : {{link}}\nMon score authentifié par signature cryptographique : {{signature}}",
       "error": "Unable to prepare the signed deck: {{error}}",
       "channels": {
         "linkedin": "LinkedIn",

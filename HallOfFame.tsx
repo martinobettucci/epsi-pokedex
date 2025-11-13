@@ -20,7 +20,7 @@ const APP_SHARE_LINK = ((): string => {
   const configured = import.meta.env.VITE_APP_PUBLIC_URL?.trim();
   return configured && configured.length > 0
     ? configured.replace(/\/+$/, '')
-    : 'https://minimon-deck-game.netlify.app/';
+    : 'https://minimon.lelabs.tech/';
 })();
 const SHARE_CHANNELS: ShareChannel[] = ['linkedin', 'x', 'facebook', 'instagram'];
 const shareUrlBuilders: Record<ShareChannel, (message: string) => string> = {
