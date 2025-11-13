@@ -12,6 +12,7 @@ import ParticleCanvas from './components/ParticleCanvas';
 import { balanceConfig, calculateDeckScore } from './utils/gameHelpers';
 import { useTranslation } from './i18n';
 import Footer from './components/Footer';
+import MaintenancePage from './MaintenancePage';
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
 const SCORE_VERSION = 'v2.0';
@@ -52,12 +53,19 @@ const App: React.FC = () => {
     soldHighRarity: false,
     startTimestamp: Date.now(),
   });
+  const [healthStatus, setHealthStatus] = useState<'checking' | 'healthy' | 'unavailable'>('checking');
+  const [healthTrigger, setHealthTrigger] = useState(0);
+  const healthEndpoint = import.meta.env.VITE_API_HEALTH_ENDPOINT?.trim() || '/health';
 
   const handleAcceptConsent = useCallback(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('minimonConsent', 'true');
     }
     setConsentGiven(true);
+  }, []);
+
+  const handleRetryHealth = useCallback(() => {
+    setHealthTrigger((prev) => prev + 1);
   }, []);
 
   const recordGeneration = useCallback(() => {
@@ -104,6 +112,28 @@ const App: React.FC = () => {
   useEffect(() => {
     initializeApp();
   }, [initializeApp]);
+
+  useEffect(() => {
+    if (!consentGiven) {
+      return;
+    }
+    const controller = new AbortController();
+    let active = true;
+    setHealthStatus('checking');
+    fetch(healthEndpoint, { signal: controller.signal })
+      .then((response) => {
+        if (!active) return;
+        setHealthStatus(response.ok ? 'healthy' : 'unavailable');
+      })
+      .catch(() => {
+        if (!active) return;
+        setHealthStatus('unavailable');
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [consentGiven, healthEndpoint, healthTrigger]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -237,6 +267,17 @@ const App: React.FC = () => {
 
   if (!consentGiven) {
     return <ConsentPage onAccept={handleAcceptConsent} />;
+  }
+  if (healthStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 to-indigo-950 text-gray-100">
+        <Loader2 className="animate-spin h-12 w-12 text-indigo-400" aria-label={t('app.loading')} />
+        <p className="mt-4 text-xl text-gray-300 drop-shadow-lg">{t('app.loading')}</p>
+      </div>
+    );
+  }
+  if (healthStatus === 'unavailable') {
+    return <MaintenancePage onRetry={handleRetryHealth} />;
   }
 
   if (isLoadingApp) {

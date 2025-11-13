@@ -17,6 +17,12 @@
     "pointAcceptance": "En continuant, vous acceptez d’interagir avec nos serveurs et avec l’hébergement Netlify.",
     "button": "Je comprends et j’accepte"
   },
+  "maintenance": {
+    "title": "Mode maintenance",
+    "body": "Nos services sont temporairement inaccessibles. Merci de revenir d'ici quelques instants.",
+    "invite": "Nous basculons l'accès via notre API française ; merci pour votre patience.",
+    "button": "Réessayer"
+  },
   "app": {
     "loading": "Chargement de Minimon Lab..."
   },

@@ -17,6 +17,12 @@
     "pointAcceptance": "Continuing means you accept interacting with our API and the Netlify hosting environment.",
     "button": "I understand and accept"
   },
+  "maintenance": {
+    "title": "Maintenance mode",
+    "body": "Our backend services are currently unreachable. Please come back shortly.",
+    "invite": "We are rerouting everything through our French API server; thanks for your patience.",
+    "button": "Retry connection"
+  },
   "app": {
     "loading": "Loading Minimon Lab..."
   },

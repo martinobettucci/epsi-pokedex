@@ -25,6 +25,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RH8EA8_DSoicXdw1oQInI2
    `npm run dev`
 4. When browsing the Hall of Fame, click the exported deck and “Share this deck” to request a certified signature; you can then push the prepared message to LinkedIn, X, Instagram, or Facebook with the official app link.
 5. On first visit you must accept the consent notice explaining that decks stay on your device while the UI is hosted on Netlify and the API runs from a private French server. Continuing means you accept interacting with those services.
+6. The app routinely pings `/health` (or any override defined by `VITE_HEALTH_ENDPOINT`) so if the API is unreachable it will show a maintenance page and invite users to retry.
 4. Switch between English, Français, and Italiano from the language dropdown on the welcome screen to translate the entire interface instantly.
 5. When the app is served under `*.lelabs.tech`, Umami analytics bootstraps automatically via the `analytics.p2enjoy.studio` script; no additional setup is needed.
 6. Score/retention note: quick-flipping a duplicate within 5 seconds grants bonus points, while repeating the same rarity lowers refunds slightly to keep the market flowing; remaining tokens convert via the diminishing formula documented in `docs/01-introduction.md`.
