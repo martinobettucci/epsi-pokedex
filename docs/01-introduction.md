@@ -11,7 +11,10 @@ L’application permet à chaque utilisateur de générer, posséder et revendre
 * Lors de la première connexion, l’utilisateur reçoit **100 jetons**.
 * Chaque génération de Minimon coûte **10 jetons**.
 * Lorsqu’un Minimon est revendu, l’utilisateur récupère **5 jetons**.
-* À la fin d’une session archivée, chaque jeton restant est **compté comme 1 point supplémentaire** dans le score Minidek total.
+* À la fin d’une session archivée, chaque jeton restant devient un petit bonus de score via une formule à rendements décroissants (0.5×tokens + 2.5×√tokens).
+* Des « quick flips » (revendre un Minimon encore « NEW! » en moins de 5 secondes) offrent un point bonus, tandis que la revente répétée d’une même rareté baisse temporairement le remboursement.
+* L’Hall of Fame ajoute des badges (Curateur, Flipper, Prise de risque, Course courageuse, Sans hésitation, Pas de joueur) pour documenter le style de chaque run (garde, revente, gros risques, quick flips agressifs ou aucune revente).
+* Les runs archivés reçoivent un badge « Curateur », « Flipper » ou « Prise de risque » dans le Hall of Fame selon leur style (garde vs revente) et leur tempo.
 * Le solde de jetons ne peut jamais être négatif.
 
 Le solde et les actifs sont sauvegardés localement pour permettre une expérience **offline**.

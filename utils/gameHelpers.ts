@@ -1,45 +1,101 @@
 // utils/gameHelpers.ts
 
-import { MinimonRarity } from '../types';
+import { Minimon, MinimonRarity, MinimonStatus } from '../types';
 
-/**
- * Returns the resell value for a given Minimon rarity.
- * @param rarity The rarity of the Minimon.
- * @returns The number of tokens received when reselling.
- */
-export const getRarityResellValue = (rarity: MinimonRarity): number => {
-  switch (rarity) {
-    case MinimonRarity.S_PLUS: return 25;
-    case MinimonRarity.S: return 15;
-    case MinimonRarity.A: return 10;
-    case MinimonRarity.B: return 5;
-    case MinimonRarity.C: return 4;
-    case MinimonRarity.D: return 3;
-    case MinimonRarity.E: return 2;
-    case MinimonRarity.F: return 1;
-    default: return 1;
-  }
+export const balanceConfig = {
+  generationCost: 10,
+  topOwnedCount: 8,
+  overflowWeight: 0.25,
+  resellRefunds: {
+    [MinimonRarity.F]: 1,
+    [MinimonRarity.E]: 2,
+    [MinimonRarity.D]: 3,
+    [MinimonRarity.C]: 4,
+    [MinimonRarity.B]: 6,
+    [MinimonRarity.A]: 10,
+    [MinimonRarity.S]: 15,
+    [MinimonRarity.S_PLUS]: 25,
+  } as Record<MinimonRarity, number>,
+  ownedScore: {
+    [MinimonRarity.F]: 1,
+    [MinimonRarity.E]: 2,
+    [MinimonRarity.D]: 4,
+    [MinimonRarity.C]: 7,
+    [MinimonRarity.B]: 12,
+    [MinimonRarity.A]: 20,
+    [MinimonRarity.S]: 35,
+    [MinimonRarity.S_PLUS]: 55,
+  } as Record<MinimonRarity, number>,
+  resoldScore: {
+    [MinimonRarity.F]: 0,
+    [MinimonRarity.E]: 0,
+    [MinimonRarity.D]: 0.5,
+    [MinimonRarity.C]: 1,
+    [MinimonRarity.B]: 1.5,
+    [MinimonRarity.A]: 2,
+    [MinimonRarity.S]: 3,
+    [MinimonRarity.S_PLUS]: 4,
+  } as Record<MinimonRarity, number>,
 };
 
-/**
- * Returns the Minidek score value for an OWNED Minimon based on its rarity.
- * Resold Minimon always give 1 point.
- * @param rarity The rarity of the Minimon.
- * @returns The number of points added to the Minidek score.
- */
-export const getRarityMinidekScoreValue = (rarity: MinimonRarity): number => {
-  switch (rarity) {
-    case MinimonRarity.S_PLUS: return 80;
-    case MinimonRarity.S: return 50;
-    case MinimonRarity.A: return 30;
-    case MinimonRarity.B: return 20;
-    case MinimonRarity.C: return 15;
-    case MinimonRarity.D: return 10;
-    case MinimonRarity.E: return 7;
-    case MinimonRarity.F: return 5;
-    default: return 5;
-  }
+export const getRarityResellValue = (rarity: MinimonRarity): number =>
+  balanceConfig.resellRefunds[rarity] ?? 1;
+
+export const getRarityMinidekScoreValue = (rarity: MinimonRarity): number =>
+  balanceConfig.ownedScore[rarity] ?? 1;
+
+export const getResoldMinidekScoreValue = (rarity: MinimonRarity): number =>
+  balanceConfig.resoldScore[rarity] ?? 0;
+
+export const tokensToScore = (tokens: number): number => {
+  const t = Math.max(0, tokens);
+  return Math.round(0.5 * t + 2.5 * Math.sqrt(t));
 };
+
+const setBonusThresholds = [
+  { count: 8, bonus: 20 },
+  { count: 5, bonus: 10 },
+  { count: 3, bonus: 5 },
+];
+
+export const calculateDeckScore = (
+  minimons: Minimon[],
+  tokenBalance: number,
+  quickFlipBonus = 0,
+): number => {
+  const owned = minimons
+    .filter((minimon) => minimon.status === MinimonStatus.OWNED)
+    .sort((a, b) => rarityOrderMap[b.rarity] - rarityOrderMap[a.rarity]);
+
+  const topSlice = owned.slice(0, balanceConfig.topOwnedCount);
+  const overflowSlice = owned.slice(balanceConfig.topOwnedCount);
+
+  const topScore = topSlice.reduce((acc, minimon) => acc + getRarityMinidekScoreValue(minimon.rarity), 0);
+  const overflowScore = overflowSlice.reduce(
+    (acc, minimon) => acc + getRarityMinidekScoreValue(minimon.rarity) * balanceConfig.overflowWeight,
+    0,
+  );
+
+  const resoldScore = minimons
+    .filter((minimon) => minimon.status === MinimonStatus.RESOLD)
+    .reduce((acc, minimon) => acc + getResoldMinidekScoreValue(minimon.rarity), 0);
+
+  const distinctHighRarities = new Set(
+    owned
+      .filter((m) => [MinimonRarity.B, MinimonRarity.A, MinimonRarity.S, MinimonRarity.S_PLUS].includes(m.rarity))
+      .map((m) => m.rarity),
+  ).size;
+  const setBonus = setBonusThresholds.reduce((bonus, threshold) => {
+    if (distinctHighRarities >= threshold.count) {
+      return Math.max(bonus, threshold.bonus);
+    }
+    return bonus;
+  }, 0);
+
+  return Math.round(topScore + overflowScore + resoldScore + tokensToScore(tokenBalance) + quickFlipBonus);
+};
+
+export const tokenToScoreSoftCap = (tokens: number): number => tokensToScore(tokens);
 
 /**
  * A map defining the order of Minimon rarities for sorting purposes.

@@ -37,7 +37,14 @@ This document tracks all development tasks for the Minimon Generator application
 - [x] Fix redundant and awkward API error messages by refining `MainGameScreen.tsx` to directly use `error.message` from `minimonApiService.ts` and consistently append "Tokens refunded.".
 - [x] Change all references to "Pokemon" and "Pokedex" to "Minimon" and "Minidek" respectively.
 - [x] Prevent invalid `minimon.rarity` strings (e.g., `// Updated callF`) from being displayed in the UI by validating against `MinimonRarity` enum and showing "N/A" as a fallback.
+- [x] Added a configurable balance module (refunds, owned/resold weights, overflow policy, token-to-score formula, quick-flip bonus) and wired it into live scoring, archives, and sharing.
+- [x] Implemented quick-flip telemetry, market fatigue refunds, and detailed run telemetry storage (rolls, tokens, quick flips, style badges), then surface those badges/telemetry in the Hall of Fame.
+- [x] Documented the new economy in docs/locales and README plus added conditional Umami + shared footer/analytics enhancements for tracking deployments.
 
 ## In Progress
+- [ ] Define a tunable scoring/resell configuration block (genCost, refund table, owned/resell weights, tokens-to-score formula, top-N limits) so future adjustments aren’t hard-coded.
+- [ ] Apply the new scoring/token conversion logic the UI already uses (archive + live score) and adjust resell bonus stories, ensuring the Hall of Fame shows “scored by vX.Y” metadata.
+- [ ] Update docs/strategy copy and telemetry suggestions to describe the token-rock/pity/cooldown balancing plan and the new “share championship deck” CTA below each score.
+- [ ] Add instrumentation hooks (events or counters) for bankroll stats, rolls, and scores to observe the new economy.
 
 ## Planned

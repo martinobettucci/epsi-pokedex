@@ -147,15 +147,26 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <ArrowRightCircle className="h-5 w-5 text-cyan-300" />
               {t('welcome.guide.title')}
             </div>
-            <p className="text-cyan-100 mb-3 leading-relaxed">
-              {t('welcome.guide.paragraph1')}
-            </p>
-            <p className="text-cyan-100 mb-3 leading-relaxed">
-              {t('welcome.guide.paragraph2')}
-            </p>
-            <p className="text-sm text-indigo-200">
-              {t('welcome.guide.paragraph3')}
-            </p>
+          <p className="text-cyan-100 mb-3 leading-relaxed">
+            {t('welcome.guide.paragraph1')}
+          </p>
+          <p className="text-cyan-100 mb-3 leading-relaxed">
+            {t('welcome.guide.paragraph2')}
+          </p>
+          <p className="text-sm text-indigo-200">
+            {t('welcome.guide.paragraph3')}
+          </p>
+          <div className="mt-4 text-left text-xs text-gray-300 space-y-2">
+            <p className="font-semibold text-sm text-gray-200">{t('welcome.guide.badgeTitle')}</p>
+            <ul className="list-inside list-disc space-y-1 text-gray-300">
+              <li>{t('welcome.guide.badgeCurator')}</li>
+              <li>{t('welcome.guide.badgeFlipper')}</li>
+              <li>{t('welcome.guide.badgeRisk')}</li>
+              <li>{t('welcome.guide.badgeBrave')}</li>
+              <li>{t('welcome.guide.badgeNoBrainer')}</li>
+              <li>{t('welcome.guide.badgeNoPlayer')}</li>
+            </ul>
+          </div>
           </div>
         </div>
       </div>

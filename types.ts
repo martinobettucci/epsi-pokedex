@@ -45,12 +45,32 @@ export interface TokenBalance {
 /**
  * Interface for an archived game, storing historical Minidek data.
  */
+export type StyleBadge =
+  | 'Curator'
+  | 'Flipper'
+  | 'Risk-taker'
+  | 'Brave run'
+  | 'No brainer'
+  | 'No player';
+
+export interface ArchiveTelemetry {
+  rolls: number;
+  tokensSpent: number;
+  resellCount: number;
+  quickFlipCount: number;
+  soldHighRarity: boolean;
+  sessionDurationSeconds: number;
+  styleBadge: StyleBadge;
+}
+
 export interface ArchivedGame {
   id: string; // Unique ID for the archived game (e.g., timestamp)
   score: number;
   tokenBalance: number;
   minimons: Minimon[]; // Snapshot of minimons at the time of archiving
   archiveDate: string; // ISO 8601 string when the game was archived
+  telemetry: ArchiveTelemetry;
+  scoredByVersion: string;
 }
 
 /**

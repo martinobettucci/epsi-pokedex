@@ -223,7 +223,13 @@ export class IndexedDbService {
    * @param minimons The collection of Minimon at the time of archiving.
    * @returns A promise that resolves with the archived game object.
    */
-  public async archiveCurrentGame(score: number, tokenBalance: number, minimons: Minimon[]): Promise<ArchivedGame> {
+  public async archiveCurrentGame(
+    score: number,
+    tokenBalance: number,
+    minimons: Minimon[],
+    telemetry: ArchiveTelemetry,
+    scoredByVersion: string,
+  ): Promise<ArchivedGame> {
     return this.withTransaction<ArchivedGame>(StoreNames.Archives, 'readwrite', (store) => {
       return new Promise((resolve, reject) => {
         const archivedGame: ArchivedGame = {
@@ -232,6 +238,8 @@ export class IndexedDbService {
           tokenBalance,
           minimons,
           archiveDate: new Date().toISOString(),
+          telemetry,
+          scoredByVersion,
         };
         const request = store.add(archivedGame);
         request.onsuccess = () => {

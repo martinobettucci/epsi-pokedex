@@ -2,17 +2,33 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { indexedDbService } from './services/indexedDbService';
-import { AppState as AppStateType, MinimonStatus, MinimonRarity, Minimon } from './types'; // Import necessary types
+import { AppState as AppStateType, MinimonStatus, MinimonRarity, Minimon, ArchiveTelemetry, StyleBadge } from './types';
 import WelcomeScreen from './WelcomeScreen';
 import MainGameScreen from './MainGameScreen';
 import HallOfFame from './HallOfFame';
 import { Loader2 } from 'lucide-react';
-import ParticleCanvas from './components/ParticleCanvas'; // Import ParticleCanvas
-import { getRarityMinidekScoreValue } from './utils/gameHelpers'; // Import rarity score helper
+import ParticleCanvas from './components/ParticleCanvas';
+import { balanceConfig, calculateDeckScore } from './utils/gameHelpers';
 import { useTranslation } from './i18n';
 import Footer from './components/Footer';
 
 type AppScreen = 'loading' | 'welcome' | 'mainGame' | 'hallOfFame';
+const SCORE_VERSION = 'v2.0';
+
+const determineStyleBadge = (minimons: Minimon[], telemetry: ArchiveTelemetry): StyleBadge => {
+  if (telemetry.soldHighRarity) return 'Brave run';
+  if (telemetry.quickFlipCount >= 3) return 'No brainer';
+  if (telemetry.resellCount === 0) return 'No player';
+  const owned = minimons.filter((m) => m.status === MinimonStatus.OWNED).length;
+  const resold = minimons.filter((m) => m.status === MinimonStatus.RESOLD).length;
+  if (owned >= resold * 2 && owned >= 3) {
+    return 'Curator';
+  }
+  if (resold >= owned && resold >= 2) {
+    return 'Flipper';
+  }
+  return 'Risk-taker';
+};
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -20,21 +36,30 @@ const App: React.FC = () => {
   const [isLoadingApp, setIsLoadingApp] = useState<boolean>(true);
   const [canContinueGame, setCanContinueGame] = useState<boolean>(false);
   const [hasUnarchivedProgress, setHasUnarchivedProgress] = useState<boolean>(false);
+  const [sessionTelemetry, setSessionTelemetry] = useState({
+    rolls: 0,
+    tokensSpent: 0,
+    resellCount: 0,
+    quickFlipCount: 0,
+    soldHighRarity: false,
+    startTimestamp: Date.now(),
+  });
 
-  // Function to calculate score for archiving
-  const calculateMinidekScore = useCallback((minimons: Minimon[], tokenBalance = 0) => {
-    const baseScore = minimons.reduce((score, minimon) => {
-      if (minimon.status === MinimonStatus.OWNED) {
-        return score + getRarityMinidekScoreValue(minimon.rarity);
-      }
-      if (minimon.status === MinimonStatus.RESOLD) {
-        return score + 1;
-      }
-      return score;
-    }, 0);
-    return baseScore + tokenBalance;
+  const recordGeneration = useCallback(() => {
+    setSessionTelemetry((prev) => ({
+      ...prev,
+      rolls: prev.rolls + 1,
+      tokensSpent: prev.tokensSpent + balanceConfig.generationCost,
+    }));
   }, []);
 
+  const resetTelemetry = useCallback(() => {
+    setSessionTelemetry({ rolls: 0, tokensSpent: 0, resellCount: 0, quickFlipCount: 0, soldHighRarity: false, startTimestamp: Date.now() });
+  }, []);
+
+  const calculateMinidekScore = useCallback((minimons: Minimon[], tokenBalance = 0, quickFlipBonus = 0) => {
+    return calculateDeckScore(minimons, tokenBalance, quickFlipBonus);
+  }, []);
 
   const initializeApp = useCallback(async () => {
     setIsLoadingApp(true);
@@ -55,11 +80,11 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to initialize app state:', error);
-      setCurrentScreen('welcome'); // Fallback to welcome screen on error
+      setCurrentScreen('welcome');
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculateMinidekScore]);
+  }, []);
 
   useEffect(() => {
     initializeApp();
@@ -93,32 +118,40 @@ const App: React.FC = () => {
       if (archiveCurrent) {
         const minimonsToArchive = await indexedDbService.getMinimons();
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount); // Calculate score using the helper
+        const baseTelemetry: ArchiveTelemetry = {
+          rolls: sessionTelemetry.rolls,
+          tokensSpent: sessionTelemetry.tokensSpent,
+          resellCount: sessionTelemetry.resellCount,
+          quickFlipCount: sessionTelemetry.quickFlipCount,
+          soldHighRarity: sessionTelemetry.soldHighRarity,
+          sessionDurationSeconds: Math.round((Date.now() - sessionTelemetry.startTimestamp) / 1000),
+          styleBadge: 'Curator',
+        };
+        const styleBadge = determineStyleBadge(minimonsToArchive, baseTelemetry);
+        const telemetry = { ...baseTelemetry, styleBadge };
+        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount, sessionTelemetry.quickFlipCount);
 
-        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
+        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive, telemetry, SCORE_VERSION);
       }
-      await indexedDbService.clearCurrentGameData(); // Clears minimons, resets tokens, sets hasActiveGame to true
-      // The hasActiveGame is set to true by clearCurrentGameData, no need to explicitly save again
-      setCanContinueGame(false); // No minimon yet, so can't continue
-      setHasUnarchivedProgress(false); // Progress cleared
+      await indexedDbService.clearCurrentGameData();
+      setCanContinueGame(false);
+      setHasUnarchivedProgress(false);
+      resetTelemetry();
       setCurrentScreen('mainGame');
     } catch (error) {
       console.error('Failed to start new game:', error);
-      // Potentially show an error message
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculateMinidekScore]);
+  }, [calculateMinidekScore, resetTelemetry, sessionTelemetry]);
 
   const handleContinueGame = useCallback(async () => {
     setIsLoadingApp(true);
     try {
-      // Ensure app state is marked as active before continuing
       await indexedDbService.saveAppState({ id: 'currentAppState', hasActiveGame: true, lastPlayedDate: new Date().toISOString() });
       setCurrentScreen('mainGame');
     } catch (error) {
       console.error('Failed to continue game:', error);
-      // Potentially show an error message
     } finally {
       setIsLoadingApp(false);
     }
@@ -130,32 +163,38 @@ const App: React.FC = () => {
       const minimonsToArchive = await indexedDbService.getMinimons();
       if (minimonsToArchive.length > 0) {
         const tokenBalanceObj = await indexedDbService.getTokenBalance();
-        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount);
+        const baseTelemetry: ArchiveTelemetry = {
+          rolls: sessionTelemetry.rolls,
+          tokensSpent: sessionTelemetry.tokensSpent,
+          resellCount: sessionTelemetry.resellCount,
+          quickFlipCount: sessionTelemetry.quickFlipCount,
+          soldHighRarity: sessionTelemetry.soldHighRarity,
+          sessionDurationSeconds: Math.round((Date.now() - sessionTelemetry.startTimestamp) / 1000),
+          styleBadge: 'Curator',
+        };
+        const styleBadge = determineStyleBadge(minimonsToArchive, baseTelemetry);
+        const telemetry = { ...baseTelemetry, styleBadge };
+        const score = calculateMinidekScore(minimonsToArchive, tokenBalanceObj.amount, sessionTelemetry.quickFlipCount);
 
-        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive);
+        await indexedDbService.archiveCurrentGame(score, tokenBalanceObj.amount, minimonsToArchive, telemetry, SCORE_VERSION);
       }
-      
-      // Clear current game data and deactivate active game state
       await indexedDbService.resetGameAfterArchive();
-
-      setCanContinueGame(false); // Game is ended, no active game to continue
-      setHasUnarchivedProgress(false); // Progress cleared
+      setCanContinueGame(false);
+      setHasUnarchivedProgress(false);
+      resetTelemetry();
       setCurrentScreen('welcome');
     } catch (error) {
       console.error('Failed to end game and archive:', error);
-      // Potentially show an error message
     } finally {
       setIsLoadingApp(false);
     }
-  }, [calculateMinidekScore]);
+  }, [calculateMinidekScore, resetTelemetry, sessionTelemetry]);
 
   const handleViewHallOfFame = useCallback(() => {
     setCurrentScreen('hallOfFame');
   }, []);
 
-  // For Hall of Fame, we want to go back to Welcome screen, but not necessarily 'exit' an active game context
   const handleBackToWelcomeFromHallOfFame = useCallback(async () => {
-    // Re-evaluate if there's an active game context from DB
     const appState = await indexedDbService.getAppState();
     const minimons = await indexedDbService.getMinimons();
     const newCanContinueGame = appState.hasActiveGame && minimons.length > 0;
@@ -164,6 +203,22 @@ const App: React.FC = () => {
     setCurrentScreen('welcome');
   }, []);
 
+  const handleSessionGenerate = () => {
+    setSessionTelemetry((prev) => ({
+      ...prev,
+      rolls: prev.rolls + 1,
+      tokensSpent: prev.tokensSpent + balanceConfig.generationCost,
+    }));
+  };
+
+  const handleSessionResell = (rarity: MinimonRarity, quickFlip: boolean) => {
+    setSessionTelemetry((prev) => ({
+      ...prev,
+      resellCount: prev.resellCount + 1,
+      quickFlipCount: prev.quickFlipCount + (quickFlip ? 1 : 0),
+      soldHighRarity: prev.soldHighRarity || [MinimonRarity.S, MinimonRarity.S_PLUS].includes(rarity),
+    }));
+  };
 
   if (isLoadingApp) {
     return (
@@ -176,7 +231,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <ParticleCanvas /> {/* Render ParticleCanvas as a background */}
+      <ParticleCanvas />
       <div className="relative z-10 flex min-h-screen flex-col">
         <div className="flex-grow">
           {currentScreen === 'welcome' && (
@@ -191,13 +246,14 @@ const App: React.FC = () => {
           {currentScreen === 'mainGame' && (
             <MainGameScreen
               onViewHallOfFame={handleViewHallOfFame}
-              onEndGameAndArchive={handleEndGameAndArchive} // New prop for ending and archiving
+              onEndGameAndArchive={handleEndGameAndArchive}
+              quickFlipPoints={sessionTelemetry.quickFlipCount}
+              onMinimonGenerated={handleSessionGenerate}
+              onMinimonResold={handleSessionResell}
             />
           )}
           {currentScreen === 'hallOfFame' && (
-            <HallOfFame
-              onBack={handleBackToWelcomeFromHallOfFame} // Go back to welcome screen when leaving hall of fame
-            />
+            <HallOfFame onBack={handleBackToWelcomeFromHallOfFame} />
           )}
         </div>
         <Footer />

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { indexedDbService } from './services/indexedDbService';
-import { ArchivedGame, MinimonRarity, MinimonStatus } from './types'; // Import MinimonStatus
+import { ArchivedGame, MinimonRarity, MinimonStatus, StyleBadge } from './types'; // Import MinimonStatus
 import Button from './components/Button';
 import { ArrowLeft, Trophy, Gem, Coins, Star, Loader2 } from 'lucide-react';
 import Modal from './components/Modal';
@@ -31,6 +31,12 @@ const shareUrlBuilders: Record<ShareChannel, (message: string) => string> = {
   facebook: (message) =>
     `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_LINK)}&quote=${encodeURIComponent(message)}`,
   instagram: () => 'https://www.instagram.com',
+};
+
+const badgeStyles: Record<StyleBadge, string> = {
+  Curator: 'bg-amber-300 text-amber-900',
+  Flipper: 'bg-slate-200 text-slate-900',
+  'Risk-taker': 'bg-rose-500 text-white',
 };
 
 const copyTextToClipboard = async (text: string) => {
@@ -238,7 +244,16 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                   aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
                 >
                 <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className={`text-[0.55rem] uppercase tracking-[0.3em] rounded-full px-2 py-0.5 ${
+                        badgeStyles[(archive.telemetry?.styleBadge || 'Curator') as StyleBadge] ?? 'bg-slate-500 text-white'
+                      }`}
+                    >
+                      {archive.telemetry?.styleBadge
+                        ? t(`hallOfFame.badges.${archive.telemetry.styleBadge}`)
+                        : archive.telemetry?.styleBadge || t('hallOfFame.badges.Curator')}
+                    </span>
                     <h3 className="text-3xl font-extrabold tracking-wide">
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'} {t('hallOfFame.detailsBadge')}
                     </h3>
@@ -290,10 +305,20 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                   aria-label={t('hallOfFame.modalTitle', { date: new Date(archive.archiveDate).toLocaleDateString() })}
                 >
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-100 mb-2 flex items-center gap-2">
-                      <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-md" />
-                      {t('hallOfFame.detailsBadge')} <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
-                    </h3>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <Trophy className="h-6 w-6 text-yellow-500 drop-shadow-md" />
+                        {t('hallOfFame.detailsBadge')}
+                      </h3>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${badgeStyles[(archive.telemetry?.styleBadge || 'Curator') as StyleBadge] ?? 'bg-slate-600 text-white'}`}>
+                        {archive.telemetry?.styleBadge
+                          ? t(`hallOfFame.badges.${archive.telemetry.styleBadge}`)
+                          : archive.telemetry?.styleBadge || t('hallOfFame.badges.Curator')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-gray-400 mb-2">
+                      <span className="text-lime-300 drop-shadow-sm">{archive.score}</span>
+                    </div>
                     <p className="text-sm text-gray-400 mb-4">
                       {t('hallOfFame.archivedOn')} {new Date(archive.archiveDate).toLocaleDateString()}
                     </p>
@@ -341,17 +366,37 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
           cancelButtonText={t('common.close')}
         >
           <div className="space-y-4">
-            <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700">
+            <div className="flex flex-col gap-2 bg-gray-800 p-3 rounded-lg border border-gray-700">
               <span className="flex items-center gap-2 text-xl font-bold text-gray-100">
                 <Trophy className="h-6 w-6 text-yellow-500" /> {t('hallOfFame.detailsBadge')} <span className="text-lime-300">{selectedArchive.score}</span>
               </span>
               <span className="flex items-center gap-2 text-lg font-semibold text-gray-200">
                 <Gem className="h-5 w-5 text-lime-300" /> {t('hallOfFame.tokens')} <span className="text-lime-300">{selectedArchive.tokenBalance}</span>
               </span>
+              <span className="text-xs text-gray-400">{t('hallOfFame.scoredBy', { version: selectedArchive.scoredByVersion })}</span>
             </div>
             <h4 className="text-lg font-semibold text-gray-100 mt-6 mb-3">
               {t('hallOfFame.modalCollectionTitle', { count: selectedArchive.minimons.length })}
             </h4>
+            {selectedArchive.telemetry && (
+              <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-2">
+                <div>
+                  {t('hallOfFame.telemetry.rolls')}: {selectedArchive.telemetry.rolls}
+                </div>
+                <div>
+                  {t('hallOfFame.telemetry.tokens')}: {selectedArchive.telemetry.tokensSpent}
+                </div>
+                <div>
+                  {t('hallOfFame.telemetry.resells')}: {selectedArchive.telemetry.resellCount}
+                </div>
+                <div>
+                  {t('hallOfFame.telemetry.quickFlips')}: {selectedArchive.telemetry.quickFlipCount}
+                </div>
+                <div className="col-span-2">
+                  {t('hallOfFame.telemetry.duration')}: {selectedArchive.telemetry.sessionDurationSeconds}s
+                </div>
+              </div>
+            )}
             {selectedArchive.minimons.length === 0 ? (
               <p className="text-gray-400">{t('hallOfFame.modalNoMinimon')}</p>
             ) : (

@@ -7,7 +7,7 @@ import { Minimon, TokenBalance, AppMessage, MinimonStatus, MinimonRarity } from 
 import Button from './components/Button';
 import Modal from './components/Modal';
 import { PlusCircle, Coins, Sparkles, RefreshCw, XCircle, Gem, Loader2, Trophy, LogOut, Crown } from 'lucide-react';
-import { getRarityResellValue, getRarityMinidekScoreValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
+import { calculateDeckScore, getRarityResellValue, rarityOrderMap, isValidMinimonRarity } from './utils/gameHelpers'; // Updated import and function name
 import { useTranslation } from './i18n';
 
 const GENERATION_COST = 10;
@@ -15,9 +15,18 @@ const GENERATION_COST = 10;
 interface MainGameScreenProps {
   onViewHallOfFame: () => void;
   onEndGameAndArchive: () => void; // New callback for ending and archiving the game
+  quickFlipPoints: number;
+  onMinimonGenerated: () => void;
+  onMinimonResold: (rarity: MinimonRarity, quickFlip: boolean) => void;
 }
 
-const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEndGameAndArchive }) => {
+const MainGameScreen: React.FC<MainGameScreenProps> = ({
+  onViewHallOfFame,
+  onEndGameAndArchive,
+  quickFlipPoints,
+  onMinimonGenerated,
+  onMinimonResold,
+}) => {
   const { t } = useTranslation();
   const [newMinimonId, setNewMinimonId] = useState<string | null>(null);
   const [badgeVisible, setBadgeVisible] = useState(false);
@@ -42,6 +51,10 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   // Resell specific state (could be merged into generic modal, but kept separate for clarity during refactor)
   const [minimonToResellId, setMinimonToResellId] = useState<string | null>(null); // Renamed state
 
+  const [resellHistory, setResellHistory] = useState<Record<MinimonRarity, number>>(() =>
+    Object.fromEntries(Object.values(MinimonRarity).map((rarity) => [rarity, 0])) as Record<MinimonRarity, number>,
+  );
+  const generationTimestamps = useRef<Record<string, number>>({});
 
   const showMessage = useCallback((type: 'success' | 'error' | 'warning', text: string) => {
     setMessage({ type, text });
@@ -51,11 +64,21 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     return () => clearTimeout(timer);
   }, []);
 
+  const getDynamicResellValue = (rarity: MinimonRarity) => {
+    const base = getRarityResellValue(rarity);
+    const count = resellHistory[rarity] ?? 0;
+    const penalty = Math.max(0.6, 1 - 0.1 * count);
+    return Math.max(1, Math.round(base * penalty));
+  };
+
   const fetchAppData = useCallback(async () => {
     setIsLoading(true);
     try {
       const fetchedMinimons = await indexedDbService.getMinimons(); // Updated call
       setMinimons(fetchedMinimons); // Updated state
+      fetchedMinimons.forEach((minimon) => {
+        generationTimestamps.current[minimon.id] = new Date(minimon.generatedAt).getTime();
+      });
       
       const balance = await indexedDbService.getTokenBalance();
       setTokenBalance(balance.amount);
@@ -97,6 +120,8 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
       const newMinimon = await minimonApiService.generateMinimon(); // Updated API call
       await indexedDbService.addMinimon(newMinimon); // Updated call
       setMinimons((prevMinimons) => [newMinimon, ...prevMinimons]); // Updated state
+      onMinimonGenerated();
+      generationTimestamps.current[newMinimon.id] = Date.now();
       showMessage('success', t('main.messages.generateSuccess', { name: newMinimon.name, rarity: newMinimon.rarity }));
       setNewMinimonId(newMinimon.id);
       setBadgeVisible(true);
@@ -147,7 +172,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
     
     // Validate rarity for display and function call
     const currentRarity = isValidMinimonRarity(minimonToConfirm.rarity) ? minimonToConfirm.rarity : MinimonRarity.F;
-    const resellValue = getRarityResellValue(currentRarity);
+    const resellValue = getDynamicResellValue(currentRarity);
 
     setMinimonToResellId(minimonId); // Updated state
     setGenericModalTitle(t('main.modal.resellTitle'));
@@ -167,7 +192,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
             
             // Validate rarity before getting resell value
             const currentResellRarity = isValidMinimonRarity(minimonToResell.rarity) ? minimonToResell.rarity : MinimonRarity.F;
-            const currentResellValue = getRarityResellValue(currentResellRarity);
+            const currentResellValue = getDynamicResellValue(currentResellRarity);
             const newBalance = tokenBalance + currentResellValue;
             await indexedDbService.updateTokenBalance(newBalance);
 
@@ -175,6 +200,13 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
               prevMinimons.map((p) => (p.id === updatedMinimon.id ? updatedMinimon : p)),
             );
             setTokenBalance(newBalance);
+            const genTimestamp = generationTimestamps.current[minimonToResell.id];
+            const quickFlip = !!(genTimestamp && Date.now() - genTimestamp <= 5_000);
+            onMinimonResold(currentResellRarity, quickFlip);
+            setResellHistory((prev) => ({
+              ...prev,
+              [currentResellRarity]: (prev[currentResellRarity] ?? 0) + 1,
+            }));
             
             showMessage('success', t('main.messages.resellSuccess', { name: minimonToResell.name, tokens: currentResellValue }));
           }
@@ -234,19 +266,8 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
   }, []);
   
   const minidekScore = useMemo(() => { // Renamed variable
-    const baseScore = minimons.reduce((score, minimon) => { // Updated variable
-      // Validate rarity before using it for score calculation
-      const minimonRarity = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : MinimonRarity.F;
-      if (minimon.status === MinimonStatus.OWNED) { // Updated type
-        return score + getRarityMinidekScoreValue(minimonRarity); // Updated call
-      }
-      if (minimon.status === MinimonStatus.RESOLD) { // Updated type
-        return score + 1; // 1 point for each resold Minimon
-      }
-      return score;
-    }, 0);
-    return baseScore + tokenBalance;
-  }, [minimons, tokenBalance]); // Updated dependency
+    return calculateDeckScore(minimons, tokenBalance, quickFlipPoints);
+  }, [minimons, tokenBalance, quickFlipPoints]); // Updated dependency
 
   const sortedMinimons = useMemo(() => { // Renamed variable
     const minimonsToSort = [...minimons]; // Updated variable
@@ -396,7 +417,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({ onViewHallOfFame, onEnd
             // Validate rarity for display and function call
             const displayRarity = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : 'N/A';
             const validRarityForResell = isValidMinimonRarity(minimon.rarity) ? minimon.rarity : MinimonRarity.F;
-            const resellValue = getRarityResellValue(validRarityForResell);
+            const resellValue = getDynamicResellValue(validRarityForResell);
             
             return (
               <div
