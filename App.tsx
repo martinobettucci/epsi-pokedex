@@ -6,6 +6,7 @@ import { AppState as AppStateType, MinimonStatus, MinimonRarity, Minimon, Archiv
 import WelcomeScreen from './WelcomeScreen';
 import MainGameScreen from './MainGameScreen';
 import HallOfFame from './HallOfFame';
+import ConsentPage from './ConsentPage';
 import { Loader2 } from 'lucide-react';
 import ParticleCanvas from './components/ParticleCanvas';
 import { balanceConfig, calculateDeckScore } from './utils/gameHelpers';
@@ -35,6 +36,10 @@ const determineStyleBadge = (minimons: Minimon[], telemetry: ArchiveTelemetry): 
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+  const [consentGiven, setConsentGiven] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('minimonConsent') === 'true';
+  });
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('loading');
   const [isLoadingApp, setIsLoadingApp] = useState<boolean>(true);
   const [canContinueGame, setCanContinueGame] = useState<boolean>(false);
@@ -47,6 +52,13 @@ const App: React.FC = () => {
     soldHighRarity: false,
     startTimestamp: Date.now(),
   });
+
+  const handleAcceptConsent = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('minimonConsent', 'true');
+    }
+    setConsentGiven(true);
+  }, []);
 
   const recordGeneration = useCallback(() => {
     setSessionTelemetry((prev) => ({
@@ -222,6 +234,10 @@ const App: React.FC = () => {
       soldHighRarity: prev.soldHighRarity || [MinimonRarity.S, MinimonRarity.S_PLUS].includes(rarity),
     }));
   };
+
+  if (!consentGiven) {
+    return <ConsentPage onAccept={handleAcceptConsent} />;
+  }
 
   if (isLoadingApp) {
     return (
