@@ -5,6 +5,11 @@
   NODE_VERSION = "20"
 
 [[redirects]]
+  from = "/favicon.png"
+  to = "/favicon.png"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
