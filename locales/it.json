@@ -139,6 +139,15 @@
       "quickFlips": "Quick flip",
       "duration": "Durata sessione"
     },
+    "reset": {
+      "button": "Reimposta sessione",
+      "title": "Ripristinare tutto?",
+      "body": "Questo cancellerà tutti i deck archiviati nell'Hall of Fame e azzererà la sessione corrente. TUTTI I TUOI DECK verranno cancellati e non ci sarà alcuna possibilità di recuperarli.",
+      "warning": "Questa azione è irreversibile.",
+      "confirm": "Cancella tutto",
+      "success": "Tutti i deck e i dati della sessione sono stati cancellati.",
+      "error": "Impossibile reimpostare la sessione: {{error}}"
+    },
     "scoredBy": "Calcolato da {{version}}",
     "share": {
       "proudLabel": "Condividi con orgoglio questo deck da campionato",

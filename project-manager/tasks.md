@@ -41,6 +41,7 @@ This document tracks all development tasks for the Minimon Generator application
 - [x] Implemented quick-flip telemetry, market fatigue refunds, and detailed run telemetry storage (rolls, tokens, quick flips, style badges), then surface those badges/telemetry in the Hall of Fame.
 - [x] Documented the new economy in docs/locales and README plus added conditional Umami + shared footer/analytics enhancements for tracking deployments.
 - [x] Added the Speedy gonzales badge for sub-60-second runs and described it across the welcome guide, Hall of Fame legend, and docs.
+- [x] Added a Hall of Fame "Reset session" action with confirmation that wipes every deck and session, ensuring the warning explains the irreversibility.
 
 ## In Progress
 - [x] Define a tunable scoring/resell configuration block (genCost, refund table, owned/resell weights, tokens-to-score formula, top-N limits) so future adjustments aren’t hard-coded.

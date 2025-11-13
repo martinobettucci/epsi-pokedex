@@ -37,6 +37,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isGeneratingMinimon, setIsGeneratingMinimon] = useState<boolean>(false); // Renamed state
   const [message, setMessage] = useState<AppMessage | null>(null);
+  const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sortOrder, setSortOrder] = useState('date-desc');
 
   // Modals for general confirmations and resell
@@ -58,10 +59,21 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({
 
   const showMessage = useCallback((type: 'success' | 'error' | 'warning', text: string) => {
     setMessage({ type, text });
-    const timer = setTimeout(() => {
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+    }
+    messageTimeoutRef.current = setTimeout(() => {
       setMessage(null);
-    }, 5000); // Message disappears after 5 seconds
-    return () => clearTimeout(timer);
+      messageTimeoutRef.current = null;
+    }, 5000);
+  }, []);
+
+  const handleCloseMessage = useCallback(() => {
+    setMessage(null);
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+      messageTimeoutRef.current = null;
+    }
   }, []);
 
   const getDynamicResellValue = (rarity: MinimonRarity) => {
@@ -99,6 +111,7 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({
     return () => {
       if (badgeHideTimeout.current) clearTimeout(badgeHideTimeout.current);
       if (badgeClearTimeout.current) clearTimeout(badgeClearTimeout.current);
+      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
     };
   }, []);
 
@@ -298,31 +311,41 @@ const MainGameScreen: React.FC<MainGameScreenProps> = ({
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 relative z-10">
-    <div className="flex justify-between items-center mb-10">
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
-        {t('main.title')}
-      </h1>
-      <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
-        <LogOut className="h-6 w-6 text-indigo-400" />
-        <span className="ml-2 hidden sm:inline">{t('main.endGame')}</span>
-      </Button>
-    </div>
-
       {message && (
-        <div
-          className={`p-4 mb-6 rounded-lg shadow-md flex items-center justify-between transition-opacity duration-300 border ${
-            message.type === 'success' ? 'bg-green-900 text-green-300 border-green-700' :
-            message.type === 'error' ? 'bg-red-900 text-red-300 border-red-700' :
-            'bg-yellow-900 text-yellow-300 border-yellow-700'
-          }`}
-          role="alert"
-        >
-          <p className="font-medium">{message.text}</p>
-          <Button variant="ghost" size="sm" onClick={() => setMessage(null)} className="text-gray-400 hover:text-white">
-            <XCircle className="h-5 w-5" />
-          </Button>
+        <div className="pointer-events-none fixed top-6 right-6 z-50 w-[min(360px,90vw)]">
+          <div
+            role="status"
+            className={`pointer-events-auto flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm shadow-2xl transition-colors duration-200 backdrop-blur-lg ${
+              message.type === 'success'
+                ? 'bg-green-900 border-green-700 text-green-200'
+                : message.type === 'error'
+                  ? 'bg-red-900 border-red-700 text-red-200'
+                  : 'bg-yellow-900 border-yellow-700 text-yellow-200'
+            }`}
+          >
+            <p className="flex-1 font-medium leading-tight break-words">
+              {message.text}
+            </p>
+            <button
+              type="button"
+              onClick={handleCloseMessage}
+              className="text-gray-200 transition hover:text-white"
+              aria-label={t('common.close')}
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       )}
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-cyan-400 drop-shadow-lg tracking-wide">
+          {t('main.title')}
+        </h1>
+        <Button variant="secondary" onClick={handleEndGameConfirmation} aria-label="End Game">
+          <LogOut className="h-6 w-6 text-indigo-400" />
+          <span className="ml-2 hidden sm:inline">{t('main.endGame')}</span>
+        </Button>
+      </div>
 
       {/* Stats Section: Token Balance & Minidek Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">

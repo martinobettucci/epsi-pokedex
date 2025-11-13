@@ -139,6 +139,15 @@
       "quickFlips": "Quick flips",
       "duration": "Session duration"
     },
+    "reset": {
+      "button": "Reset session",
+      "title": "Reset everything?",
+      "body": "This will delete every deck stored in the Hall of Fame and clear your current session. ALL your decks will be wiped out and there won't be any possibility to recover them back.",
+      "warning": "This action is irreversible.",
+      "confirm": "Wipe all decks",
+      "success": "All decks and session data have been wiped.",
+      "error": "Unable to reset session: {{error}}"
+    },
     "scoredBy": "Scored by {{version}}",
     "share": {
       "proudLabel": "Proudly share this championship grade deck",

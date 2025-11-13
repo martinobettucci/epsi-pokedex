@@ -343,6 +343,49 @@ export class IndexedDbService {
     });
   }
 
+  /**
+   * Wipes every piece of stored data so the experience starts fresh.
+   * This clears minimons, archives, settings, and app state, then reinitializes the default token balance and inactive app state.
+   */
+  public async resetEntireAppData(): Promise<void> {
+    return this.withTransaction<void>(
+      [StoreNames.Minimons, StoreNames.Settings, StoreNames.Archives, StoreNames.AppState],
+      'readwrite',
+      async (store, transaction) => {
+        const minimonStore = transaction.objectStore(StoreNames.Minimons);
+        const settingsStore = transaction.objectStore(StoreNames.Settings);
+        const archivesStore = transaction.objectStore(StoreNames.Archives);
+        const appStateStore = transaction.objectStore(StoreNames.AppState);
+
+        await new Promise<void>((resolve, reject) => {
+          const clearRequest = minimonStore.clear();
+          clearRequest.onsuccess = () => resolve();
+          clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+        });
+
+        await new Promise<void>((resolve, reject) => {
+          const clearRequest = archivesStore.clear();
+          clearRequest.onsuccess = () => resolve();
+          clearRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+        });
+
+        const initialBalance: TokenBalance = { id: 'tokenBalance', amount: 100 };
+        await new Promise<void>((resolve, reject) => {
+          const putRequest = settingsStore.put(initialBalance);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+        });
+
+        const newAppState: AppState = { id: 'currentAppState', hasActiveGame: false, lastPlayedDate: new Date().toISOString() };
+        await new Promise<void>((resolve, reject) => {
+          const putRequest = appStateStore.put(newAppState);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = (e) => reject((e.target as IDBRequest).error);
+        });
+      },
+    );
+  }
+
   // --- App State Operations ---
 
   /**

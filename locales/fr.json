@@ -139,6 +139,15 @@
       "quickFlips": "Quick flips",
       "duration": "Durée de session"
     },
+    "reset": {
+      "button": "Réinitialiser la session",
+      "title": "Tout réinitialiser ?",
+      "body": "Cela va supprimer tous les decks stockés dans le Hall of Fame et effacer la session en cours. TOUS TES DECKS seront effacés et il ne sera plus possible de les récupérer.",
+      "warning": "Cette action est irréversible.",
+      "confirm": "Tout supprimer",
+      "success": "Tous les decks et données de session ont été effacés.",
+      "error": "Impossible de réinitialiser : {{error}}"
+    },
     "scoredBy": "Score par {{version}}",
     "share": {
       "proudLabel": "Partagez fièrement ce deck de championnat",

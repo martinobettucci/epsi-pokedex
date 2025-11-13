@@ -1,6 +1,6 @@
 // HallOfFame.tsx
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { indexedDbService } from './services/indexedDbService';
 import { ArchivedGame, MinimonRarity, MinimonStatus, StyleBadge } from './types'; // Import MinimonStatus
 import Button from './components/Button';
@@ -78,6 +78,29 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   const [shareLoading, setShareLoading] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [copiedShareMessage, setCopiedShareMessage] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'error' | 'success'>('error');
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string, type: 'error' | 'success' = 'error') => {
+    setToastMessage(message);
+    setToastType(type);
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  }, []);
+
+  useEffect(() => () => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+  }, []);
 
   const fetchArchives = useCallback(async () => {
     setIsLoading(true);
@@ -142,7 +165,9 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
       setCopiedShareMessage(true);
       setTimeout(() => setCopiedShareMessage(false), 2000);
     } catch (error) {
-      setShareError(error instanceof Error ? error.message : String(error));
+      const errorText = error instanceof Error ? error.message : String(error);
+      setShareError(errorText);
+      showToast(t('hallOfFame.share.error', { error: errorText }));
     }
   };
 
@@ -164,7 +189,9 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
       const shareWindow = window.open(shareUrlBuilders[channel](shareMessage), '_blank', 'noopener');
       shareWindow?.focus();
     } catch (error) {
-      setShareError(error instanceof Error ? error.message : String(error));
+      const errorText = error instanceof Error ? error.message : String(error);
+      setShareError(errorText);
+      showToast(t('hallOfFame.share.error', { error: errorText }));
     }
   };
 
@@ -192,9 +219,34 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
       setShareSignature(response.signed.signatureB64);
       setShareModalOpen(true);
     } catch (error) {
-      setShareError(error instanceof Error ? error.message : String(error));
+      const errorText = error instanceof Error ? error.message : String(error);
+      setShareError(errorText);
+      showToast(t('hallOfFame.share.error', { error: errorText }));
     } finally {
       setShareLoading(false);
+    }
+  };
+
+  const closeResetModal = () => {
+    setIsResetModalOpen(false);
+    setResetError(null);
+  };
+
+  const handleResetSession = async () => {
+    setIsResetting(true);
+    setResetError(null);
+    try {
+      await indexedDbService.resetEntireAppData();
+      closeResetModal();
+      showToast(t('hallOfFame.reset.success'), 'success');
+      await fetchArchives();
+      onBack();
+    } catch (error) {
+      const errorText = error instanceof Error ? error.message : String(error);
+      setResetError(errorText);
+      showToast(t('hallOfFame.reset.error', { error: errorText }));
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -215,14 +267,16 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen relative z-10">
       <div className="flex flex-col gap-3 mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <Button variant="ghost" onClick={onBack} aria-label={t('hallOfFame.backLabel')}>
             <ArrowLeft className="h-6 w-6 text-gray-400 hover:text-indigo-400" />
           </Button>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-center text-fuchsia-400 drop-shadow-lg flex-grow tracking-wide">
             {t('hallOfFame.title')}
           </h1>
-          <div className="w-10"></div> {/* Spacer to balance header */}
+          <Button variant="danger" size="sm" onClick={() => setIsResetModalOpen(true)}>
+            {t('hallOfFame.reset.button')}
+          </Button>
         </div>
         <p className="mt-2 text-[0.65rem] uppercase tracking-[0.2em] text-gray-400">
           {t('hallOfFame.help')}
@@ -378,11 +432,6 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
                         {shareLoading ? t('hallOfFame.share.processing') : t('hallOfFame.share.buttonLabel')}
                       </Button>
                     </div>
-                    {shareError && (
-                      <p className="text-xs text-right text-red-400">
-                        {t('hallOfFame.share.error', { error: shareError })}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))}
@@ -515,6 +564,42 @@ const HallOfFame: React.FC<HallOfFameProps> = ({ onBack }) => {
             </p>
           </div>
         </Modal>
+      )}
+      {isResetModalOpen && (
+        <Modal
+          isOpen={isResetModalOpen}
+          onClose={closeResetModal}
+          title={t('hallOfFame.reset.title')}
+          onConfirm={handleResetSession}
+          confirmButtonText={t('hallOfFame.reset.confirm')}
+          cancelButtonText={t('common.cancel')}
+          confirmButtonVariant="danger"
+          isLoading={isResetting}
+        >
+          <p className="text-sm text-gray-200 leading-relaxed">
+            {t('hallOfFame.reset.body')}
+          </p>
+          <p className="text-xs text-red-400 mt-3">
+            {t('hallOfFame.reset.warning')}
+          </p>
+          {resetError && (
+            <p className="text-xs text-red-300 mt-3">
+              {t('hallOfFame.reset.error', { error: resetError })}
+            </p>
+          )}
+        </Modal>
+      )}
+      {toastMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-6 right-6 z-50 flex transform items-center rounded-2xl border border-white/10 bg-gradient-to-br from-black/70 to-white/10 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-lg"
+        >
+          <span
+            className={`mr-3 inline-flex h-2 w-2 rounded-full ${toastType === 'error' ? 'bg-red-400' : 'bg-emerald-400'}`}
+          />
+          <span className="max-w-xs break-words">{toastMessage}</span>
+        </div>
       )}
     </div>
   );
